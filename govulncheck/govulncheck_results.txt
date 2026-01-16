@@ -1,0 +1,115 @@
+Fetching vulnerabilities from the database...
+
+Checking the code against the vulnerabilities...
+
+The package pattern matched the following 17 root packages:
+  github.com/ubavic/bas-celik/v2/localization
+  github.com/ubavic/bas-celik/v2/document
+  github.com/ubavic/bas-celik/v2/card/cardErrors
+  github.com/ubavic/bas-celik/v2/card/ber
+  github.com/ubavic/bas-celik/v2/card/tlv
+  github.com/ubavic/bas-celik/v2/card
+  github.com/ubavic/bas-celik/v2/internal/gui/celiktheme
+  github.com/ubavic/bas-celik/v2/internal/logger
+  github.com/ubavic/bas-celik/v2/internal/gui/reader
+  github.com/ubavic/bas-celik/v2/internal/gui/translation
+  github.com/ubavic/bas-celik/v2/internal/gui/widgets
+  github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11
+  github.com/ubavic/bas-celik/v2/internal/smartbox/server
+  github.com/ubavic/bas-celik/v2/internal/gui
+  github.com/ubavic/bas-celik/v2/internal/gui/icon
+  github.com/ubavic/bas-celik/v2/internal
+  github.com/ubavic/bas-celik/v2
+Govulncheck scanned the following 36 modules and the go1.25.3 standard library:
+  github.com/ubavic/bas-celik/v2
+  fyne.io/fyne/v2@v2.5.3
+  fyne.io/systray@v1.11.0
+  github.com/BurntSushi/toml@v1.4.0
+  github.com/coder/websocket@v1.8.13
+  github.com/ebfe/scard@v0.0.0-20241214075232-7af069cabc25
+  github.com/fredbi/uri@v1.1.0
+  github.com/fsnotify/fsnotify@v1.8.0
+  github.com/fyne-io/image@v0.0.0-20240417123036-dc0ee9e7c964
+  github.com/go-gl/gl@v0.0.0-20231021071112-07e5d0ea2e71
+  github.com/go-gl/glfw/v3.3/glfw@v0.0.0-20240506104042-037f3cc74f2a
+  github.com/go-text/render@v0.2.0
+  github.com/go-text/typesetting@v0.2.1
+  github.com/godbus/dbus/v5@v5.1.0
+  github.com/jeandeaual/go-locale@v0.0.0-20241217141322-fcc2cadd6f08
+  github.com/jsummers/gobmp@v0.0.0-20230614200233-a9de23ed2e25
+  github.com/miekg/pkcs11@v1.1.1
+  github.com/nicksnyder/go-i18n/v2@v2.4.1
+  github.com/phpdave11/gofpdi@v1.0.15
+  github.com/pkg/errors@v0.9.1
+  github.com/richardlehane/mscfb@v1.0.4
+  github.com/richardlehane/msoleps@v1.0.4
+  github.com/rymdport/portal@v0.3.0
+  github.com/signintech/gopdf@v0.33.0
+  github.com/srwiley/oksvg@v0.0.0-20221011165216-be6e8873101c
+  github.com/srwiley/rasterx@v0.0.0-20220730225603-2ab79fcdd4ef
+  github.com/tiendc/go-deepcopy@v1.6.1
+  github.com/xuri/efp@v0.0.1
+  github.com/xuri/excelize/v2@v2.9.1
+  github.com/xuri/nfp@v0.0.1
+  github.com/yuin/goldmark@v1.7.8
+  golang.org/x/crypto@v0.40.0
+  golang.org/x/image@v0.25.0
+  golang.org/x/net@v0.42.0
+  golang.org/x/sys@v0.34.0
+  golang.org/x/text@v0.27.0
+
+=== Symbol Results ===
+
+Vulnerability #1: GO-2025-4175
+    Improper application of excluded DNS name constraints when verifying
+    wildcard names in crypto/x509
+  More info: https://pkg.go.dev/vuln/GO-2025-4175
+  Standard library
+    Found in: crypto/x509@go1.25.3
+    Fixed in: crypto/x509@go1.25.5
+    Example traces found:
+      #1: internal/smartbox/server/start.go:39:10: server.StartServer calls http.Server.Serve, which eventually calls x509.Certificate.Verify
+
+Vulnerability #2: GO-2025-4155
+    Excessive resource consumption when printing error string for host
+    certificate validation in crypto/x509
+  More info: https://pkg.go.dev/vuln/GO-2025-4155
+  Standard library
+    Found in: crypto/x509@go1.25.3
+    Fixed in: crypto/x509@go1.25.5
+    Example traces found:
+      #1: internal/smartbox/server/start.go:39:10: server.StartServer calls http.Server.Serve, which eventually calls x509.Certificate.Verify
+      #2: internal/smartbox/server/start.go:39:10: server.StartServer calls http.Server.Serve, which eventually calls x509.Certificate.VerifyHostname
+
+=== Package Results ===
+
+No other vulnerabilities found.
+
+=== Module Results ===
+
+Vulnerability #1: GO-2025-4135
+    Malformed constraint may cause denial of service in
+    golang.org/x/crypto/ssh/agent
+  More info: https://pkg.go.dev/vuln/GO-2025-4135
+  Module: golang.org/x/crypto
+    Found in: golang.org/x/crypto@v0.40.0
+    Fixed in: golang.org/x/crypto@v0.45.0
+
+Vulnerability #2: GO-2025-4134
+    Unbounded memory consumption in golang.org/x/crypto/ssh
+  More info: https://pkg.go.dev/vuln/GO-2025-4134
+  Module: golang.org/x/crypto
+    Found in: golang.org/x/crypto@v0.40.0
+    Fixed in: golang.org/x/crypto@v0.45.0
+
+Vulnerability #3: GO-2025-4116
+    Potential denial of service in golang.org/x/crypto/ssh/agent
+  More info: https://pkg.go.dev/vuln/GO-2025-4116
+  Module: golang.org/x/crypto
+    Found in: golang.org/x/crypto@v0.40.0
+    Fixed in: golang.org/x/crypto@v0.43.0
+
+Your code is affected by 2 vulnerabilities from the Go standard library.
+This scan also found 0 vulnerabilities in packages you import and 3
+vulnerabilities in modules you require, but your code doesn't appear to call
+these vulnerabilities.
