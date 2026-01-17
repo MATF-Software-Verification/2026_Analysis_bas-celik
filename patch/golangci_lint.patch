@@ -1,0 +1,4864 @@
+diff --git a/card/apdu.go b/card/apdu.go
+index 2c71c9a..d970f29 100644
+--- a/card/apdu.go
++++ b/card/apdu.go
+@@ -11,11 +11,7 @@ func buildAPDU(cla, ins, p1, p2 byte, data []byte, ne uint) []byte {
+ 		panic(fmt.Errorf("APDU command length too large"))
+ 	}
+ 
+-	apdu := make([]byte, 4)
+-	apdu[0] = cla
+-	apdu[1] = ins
+-	apdu[2] = p1
+-	apdu[3] = p2
++	apdu := []byte{cla, ins, p1, p2}
+ 
+ 	if length == 0 {
+ 		if ne != 0 {
+diff --git a/card/apollo.go b/card/apollo.go
+index 8249f65..78a52b0 100644
+--- a/card/apollo.go
++++ b/card/apollo.go
+@@ -19,17 +19,19 @@ type Apollo struct {
+ 	photoFile     []byte
+ }
+ 
++// APOLLO_ATR is the Answer To Reset sequence for Apollo ID cards.
+ var APOLLO_ATR = Atr([]byte{
+ 	0x3B, 0xB9, 0x18, 0x00, 0x81, 0x31, 0xFE, 0x9E, 0x80,
+ 	0x73, 0xFF, 0x61, 0x40, 0x83, 0x00, 0x00, 0x00, 0xDF,
+ })
+ 
++// InitCard initializes the Apollo card.
+ func (card *Apollo) InitCard() error {
+ 	return nil
+ }
+ 
++// ReadCard reads all files from the Apollo card.
+ func (card *Apollo) ReadCard() error {
+-
+ 	var err error
+ 
+ 	card.documentFile, err = card.ReadFile(ID_DOCUMENT_FILE_LOC)
+@@ -57,25 +59,26 @@ func (card *Apollo) ReadCard() error {
+ 	return nil
+ }
+ 
++// GetDocument parses and returns the ID document from the Apollo card.
+ func (card *Apollo) GetDocument() (document.Document, error) {
+-	doc := document.IdDocument{}
++	doc := document.IDDocument{}
+ 
+-	err := parseIdDocumentFile(card.documentFile, &doc)
++	err := parseIDDocumentFile(card.documentFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing document file: %w", err)
+ 	}
+ 
+-	err = parseIdPersonalFile(card.personalFile, &doc)
++	err = parseIDPersonalFile(card.personalFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing personal file: %w", err)
+ 	}
+ 
+-	err = parseIdResidenceFile(card.residenceFile, &doc)
++	err = parseIDResidenceFile(card.residenceFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing residence file: %w", err)
+ 	}
+ 
+-	err = parseAndAssignIdPhotoFile(card.photoFile, &doc)
++	err = parseAndAssignIDPhotoFile(card.photoFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing photo file: %w", err)
+ 	}
+@@ -83,10 +86,12 @@ func (card *Apollo) GetDocument() (document.Document, error) {
+ 	return &doc, nil
+ }
+ 
++// Atr returns the Answer To Reset of the Apollo card.
+ func (card *Apollo) Atr() Atr {
+ 	return card.atr
+ }
+ 
++// ReadFile reads a file from the Apollo card.
+ func (card *Apollo) ReadFile(name []byte) ([]byte, error) {
+ 	output := make([]byte, 0)
+ 
+@@ -125,6 +130,7 @@ func (card *Apollo) ReadFile(name []byte) ([]byte, error) {
+ 	return output, nil
+ }
+ 
++// Test verifies whether the Apollo card can be read.
+ func (card *Apollo) Test() bool {
+ 	return true
+ }
+diff --git a/card/atr.go b/card/atr.go
+index 7ad3331..8c74c7b 100644
+--- a/card/atr.go
++++ b/card/atr.go
+@@ -5,30 +5,33 @@ import (
+ 	"slices"
+ )
+ 
++// Atr represents the Answer To Reset bytes from a smart card.
+ type Atr []byte
+ 
++// String returns the hexadecimal string representation of the ATR.
+ func (atr Atr) String() string {
+ 	return hex.EncodeToString([]byte(atr))
+ }
+ 
++// Is compares this ATR with another ATR and returns true if they match.
+ func (atr Atr) Is(otherAtr Atr) bool {
+ 	return slices.Equal(atr, otherAtr)
+ }
+ 
++// DetectCardDocumentByAtr detects the type of card document based on its ATR.
+ func DetectCardDocumentByAtr(atr Atr) []CardDocumentType {
+ 	if atr.Is(GEMALTO_ATR_1) {
+-		return []CardDocumentType{GemaltoIdDocumentCardType, VehicleDocumentCardType}
++		return []CardDocumentType{GemaltoIDDocumentCardType, VehicleDocumentCardType}
+ 	} else if atr.Is(GEMALTO_ATR_2) || atr.Is(GEMALTO_ATR_3) {
+-		return []CardDocumentType{GemaltoIdDocumentCardType, MedicalDocumentCardType, VehicleDocumentCardType}
++		return []CardDocumentType{GemaltoIDDocumentCardType, MedicalDocumentCardType, VehicleDocumentCardType}
+ 	} else if atr.Is(GEMALTO_ATR_4) {
+-		return []CardDocumentType{GemaltoIdDocumentCardType, VehicleDocumentCardType}
++		return []CardDocumentType{GemaltoIDDocumentCardType, VehicleDocumentCardType}
+ 	} else if atr.Is(MEDICAL_ATR_1) || atr.Is(MEDICAL_ATR_2) {
+ 		return []CardDocumentType{MedicalDocumentCardType}
+ 	} else if atr.Is(VEHICLE_ATR_0) || atr.Is(VEHICLE_ATR_2) || atr.Is(VEHICLE_ATR_3) || atr.Is(VEHICLE_ATR_4) {
+ 		return []CardDocumentType{VehicleDocumentCardType}
+ 	} else if atr.Is(APOLLO_ATR) {
+-		return []CardDocumentType{ApolloIdDocumentCardType}
+-	} else {
+-		return []CardDocumentType{UnknownDocumentCardType}
++		return []CardDocumentType{ApolloIDDocumentCardType}
+ 	}
++	return []CardDocumentType{UnknownDocumentCardType}
+ }
+diff --git a/card/atr_test.go b/card/atr_test.go
+index 46431c7..78a652a 100644
+--- a/card/atr_test.go
++++ b/card/atr_test.go
+@@ -23,19 +23,19 @@ func Test_DetectCardDocumentByAtr(t *testing.T) {
+ 		},
+ 		{
+ 			atr:            card.APOLLO_ATR,
+-			expectedResult: []card.CardDocumentType{card.ApolloIdDocumentCardType},
++			expectedResult: []card.CardDocumentType{card.ApolloIDDocumentCardType},
+ 		},
+ 		{
+ 			atr:            card.GEMALTO_ATR_1,
+-			expectedResult: []card.CardDocumentType{card.GemaltoIdDocumentCardType, card.VehicleDocumentCardType},
++			expectedResult: []card.CardDocumentType{card.GemaltoIDDocumentCardType, card.VehicleDocumentCardType},
+ 		},
+ 		{
+ 			atr:            card.GEMALTO_ATR_2,
+-			expectedResult: []card.CardDocumentType{card.GemaltoIdDocumentCardType, card.MedicalDocumentCardType, card.VehicleDocumentCardType},
++			expectedResult: []card.CardDocumentType{card.GemaltoIDDocumentCardType, card.MedicalDocumentCardType, card.VehicleDocumentCardType},
+ 		},
+ 		{
+ 			atr:            card.GEMALTO_ATR_4,
+-			expectedResult: []card.CardDocumentType{card.GemaltoIdDocumentCardType, card.VehicleDocumentCardType},
++			expectedResult: []card.CardDocumentType{card.GemaltoIDDocumentCardType, card.VehicleDocumentCardType},
+ 		},
+ 		{
+ 			atr:            card.MEDICAL_ATR_1,
+@@ -57,6 +57,5 @@ func Test_DetectCardDocumentByAtr(t *testing.T) {
+ 				t.Errorf("Expected response to be %v, but it is %v", testCase.expectedResult, result)
+ 			}
+ 		})
+-
+ 	}
+ }
+diff --git a/card/ber/ber.go b/card/ber/ber.go
+index f37ff2b..d784102 100644
+--- a/card/ber/ber.go
++++ b/card/ber/ber.go
+@@ -1,15 +1,17 @@
++// Package ber provides functions for parsing BER (Basic Encoding Rules) encoded data.
+ package ber
+ 
+ import (
+ 	"encoding/binary"
+ 	"errors"
+ 	"fmt"
++	"math"
+ 	"strings"
+ 
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ )
+ 
+-// Represents a node (or a tree) of a BER structure.
++// BER represents a node (or a tree) of a BER structure.
+ // Each leaf node contains data, and it is considered 'primitive'.
+ // Non-leaf nodes don't contain any data, but they contain references to child nodes.
+ type BER struct {
+@@ -19,7 +21,7 @@ type BER struct {
+ 	children  []BER  // Branch nodes children. Should only exist if primitive is false.
+ }
+ 
+-// Parses BER data (described in ISO/IEC 7816-4 (2005)).
++// ParseBER parses BER data (described in ISO/IEC 7816-4 (2005)).
+ func ParseBER(data []byte) (*BER, error) {
+ 	primitive, constructed, err := parseBERLayer(data)
+ 
+@@ -67,80 +69,76 @@ func ParseBER(data []byte) (*BER, error) {
+ 	}
+ 
+ 	return &ber, nil
+-
+ }
+ 
+ // Access node's data with the provided address composed as a list of tags.
+ func (tree BER) access(address ...uint32) ([]byte, error) {
+ 	if len(address) == 0 {
+ 		return tree.data, nil
+-	} else {
+-		var found *BER = nil
+-		for i := range tree.children {
+-			if tree.children[i].tag == address[0] {
+-				found = &tree.children[i]
+-				break
+-			}
+-		}
+-		if found != nil {
+-			return found.access(address[1:]...)
+-		} else {
+-			return nil, errors.New("tag not found")
++	}
++	var found *BER
++	for i := range tree.children {
++		if tree.children[i].tag == address[0] {
++			found = &tree.children[i]
++			break
+ 		}
+ 	}
++	if found != nil {
++		return found.access(address[1:]...)
++	}
++	return nil, errors.New("tag not found")
+ }
+ 
+ // Recursively inserts a new node (with all children nodes) into BER tree. It doesn't copy data.
+ // If a node with the same tag and the type (primitive/constructed) already exists in tree, then procedure continues
+ // inserting in deeper levels. If a node with the same tag and different type already exists, function return error.
+-func (into *BER) add(new BER) error {
+-	if into.primitive {
++func (tree *BER) add(newBER BER) error {
++	if tree.primitive {
+ 		return errors.New("can't add a value into primitive value")
+ 	}
+ 
+ 	var targetField *BER
+ 
+ 	alreadyExists := false
+-	for i := range into.children {
+-		if into.children[i].tag == new.tag {
++	for i := range tree.children {
++		if tree.children[i].tag == newBER.tag {
+ 			alreadyExists = true
+-			targetField = &into.children[i]
++			targetField = &tree.children[i]
+ 			break
+ 		}
+ 	}
+ 
+ 	if !alreadyExists {
+-		into.children = append(into.children, new)
++		tree.children = append(tree.children, newBER)
+ 		return nil
+-	} else {
+-		if targetField.primitive == new.primitive {
+-			if targetField.primitive {
+-				*targetField = new
+-			} else {
+-				for i := range new.children {
+-					err := targetField.add(new.children[i])
+-					if err != nil {
+-						return err
+-					}
++	}
++	if targetField.primitive == newBER.primitive {
++		if targetField.primitive {
++			*targetField = newBER
++		} else {
++			for i := range newBER.children {
++				err := targetField.add(newBER.children[i])
++				if err != nil {
++					return err
+ 				}
+ 			}
+-		} else {
+-			return errors.New("types don't match")
+ 		}
++	} else {
++		return errors.New("types don't match")
+ 	}
+ 
+ 	return nil
+ }
+ 
+-// Merge two BER trees by adding all nodes of the second tree into the first tree.
+-// Doesn't copy an data.+
+-func (into *BER) Merge(new BER) error {
+-	if into.tag != new.tag {
++// Merge merges two BER trees by adding all nodes of the second tree into the first tree.
++// Doesn't copy any data.
++func (tree *BER) Merge(newBER BER) error {
++	if tree.tag != newBER.tag {
+ 		return errors.New("tags don't match")
+ 	}
+ 
+-	for _, c := range new.children {
+-		if err := into.add(c); err != nil {
++	for _, c := range newBER.children {
++		if err := tree.add(c); err != nil {
+ 			return err
+ 		}
+ 	}
+@@ -161,6 +159,12 @@ func parseBERLayer(data []byte) (map[uint32][]byte, map[uint32][]byte, error) {
+ 			return nil, nil, fmt.Errorf("parsing BER record tag: %w", err)
+ 		}
+ 
++		dataLenInt := len(data)
++		if dataLenInt > math.MaxUint32 {
++			return nil, nil, carderrors.ErrInvalidLength
++		}
++		dataLength := uint32(dataLenInt)
++
+ 		offset += offsetDelta
+ 
+ 		length, offsetDelta, err := ParseLength(data[offset:])
+@@ -168,8 +172,8 @@ func parseBERLayer(data []byte) (map[uint32][]byte, map[uint32][]byte, error) {
+ 			return nil, nil, fmt.Errorf("parsing BER record length: %w", err)
+ 		}
+ 
+-		if uint32(len(data)) <= offset+length {
+-			return nil, nil, fmt.Errorf("parsing BER record data: %w", cardErrors.ErrInvalidLength)
++		if dataLength <= offset+length {
++			return nil, nil, fmt.Errorf("parsing BER record data: %w", carderrors.ErrInvalidLength)
+ 		}
+ 
+ 		offset += offsetDelta
+@@ -183,16 +187,17 @@ func parseBERLayer(data []byte) (map[uint32][]byte, map[uint32][]byte, error) {
+ 
+ 		offset += length
+ 
+-		if offset == uint32(len(data)) {
++		if offset == dataLength {
+ 			break
+-		} else if offset > uint32(len(data)) {
+-			return nil, nil, cardErrors.ErrInvalidLength
++		} else if offset > dataLength {
++			return nil, nil, carderrors.ErrInvalidLength
+ 		}
+ 	}
+ 
+ 	return primF, consF, nil
+ }
+ 
++// AssignFrom assigns a string value from the BER tree at the specified address path.
+ func (tree *BER) AssignFrom(target *string, address ...uint32) {
+ 	bytes, err := tree.access(address...)
+ 	if err == nil {
+@@ -204,30 +209,29 @@ func (tree *BER) AssignFrom(target *string, address ...uint32) {
+ func (tree *BER) levels() []string {
+ 	if tree.primitive {
+ 		return []string{fmt.Sprintf("%X: %s", tree.tag, string(tree.data))}
+-	} else {
+-		strings := []string{fmt.Sprint(tree.tag) + ":"}
+-		for _, child := range tree.children {
+-			childrenStrings := child.levels()
+-			for i := range childrenStrings {
+-				childrenStrings[i] = "  " + childrenStrings[i]
+-			}
+-			strings = append(strings, childrenStrings...)
++	}
++	strings := []string{fmt.Sprint(tree.tag) + ":"}
++	for _, child := range tree.children {
++		childrenStrings := child.levels()
++		for i := range childrenStrings {
++			childrenStrings[i] = "  " + childrenStrings[i]
+ 		}
+-
+-		return strings
++		strings = append(strings, childrenStrings...)
+ 	}
++
++	return strings
+ }
+ 
+-// Flattens a BER tree into single string. Each line represents single node of a tree.
++// String flattens a BER tree into a single string. Each line represents a single node of a tree.
+ func (tree BER) String() string {
+ 	return strings.Join(tree.levels(), "\n")
+ }
+ 
+-// Parses length of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
++// ParseLength parses the length of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
+ // Returns parsed length, number of parsed bytes and possible error.
+ func ParseLength(data []byte) (uint32, uint32, error) {
+ 	if len(data) == 0 {
+-		return 0, 0, cardErrors.ErrInvalidLength
++		return 0, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	firstByte := uint32(data[0])
+@@ -236,7 +240,7 @@ func ParseLength(data []byte) (uint32, uint32, error) {
+ 		length = uint32(data[0])
+ 		offset = 1
+ 	} else if firstByte == 0x80 {
+-		return 0, 0, cardErrors.ErrInvalidFormat
++		return 0, 0, carderrors.ErrInvalidFormat
+ 	} else if firstByte == 0x81 && len(data) >= 2 {
+ 		length = uint32(data[1])
+ 		offset = 2
+@@ -250,23 +254,20 @@ func ParseLength(data []byte) (uint32, uint32, error) {
+ 		length = binary.BigEndian.Uint32(data[1:])
+ 		offset = 5
+ 	} else {
+-		return 0, 0, cardErrors.ErrInvalidLength
++		return 0, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	return length, offset, nil
+ }
+ 
+-// Parses tag of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
++// ParseTag parses the tag of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
+ // Returns parsed tag, primitive flag, number of parsed bytes and possible error.
+ func ParseTag(data []byte) (uint32, bool, uint32, error) {
+ 	if len(data) == 0 {
+-		return 0, false, 0, cardErrors.ErrInvalidLength
++		return 0, false, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+-	primitive := true
+-	if data[0]&0b100000 != 0 {
+-		primitive = false
+-	}
++	primitive := data[0]&0b100000 == 0
+ 
+ 	var tag, offset uint32
+ 	if 0x1F&data[0] != 0x1F {
+@@ -279,7 +280,7 @@ func ParseTag(data []byte) (uint32, bool, uint32, error) {
+ 		tag = uint32(data[0])<<16 | uint32(data[1])<<8 | uint32(data[2])
+ 		offset = 3
+ 	} else {
+-		return 0, false, 0, cardErrors.ErrInvalidLength
++		return 0, false, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	return tag, primitive, offset, nil
+diff --git a/card/ber/ber_test.go b/card/ber/ber_test.go
+index f29cbe8..c9c7fff 100644
+--- a/card/ber/ber_test.go
++++ b/card/ber/ber_test.go
+@@ -4,7 +4,7 @@ import (
+ 	"encoding/binary"
+ 	"testing"
+ 
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ )
+ 
+ func Test_parseBerLength(t *testing.T) {
+@@ -16,7 +16,7 @@ func Test_parseBerLength(t *testing.T) {
+ 	}{
+ 		{
+ 			data:          []byte{},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0x79},
+@@ -26,7 +26,7 @@ func Test_parseBerLength(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x80, 0x91},
+-			expectedError: cardErrors.ErrInvalidFormat,
++			expectedError: carderrors.ErrInvalidFormat,
+ 		},
+ 		{
+ 			data:                []byte{0x81, 0x01},
+@@ -36,7 +36,7 @@ func Test_parseBerLength(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x81},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0x82, 0x01, 0x02},
+@@ -46,7 +46,7 @@ func Test_parseBerLength(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x82},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0x83, 0x01, 0x02, 0x03},
+@@ -56,7 +56,7 @@ func Test_parseBerLength(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x83},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0x84, 0x01, 0x02, 0x03, 0x04},
+@@ -66,7 +66,7 @@ func Test_parseBerLength(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x84},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 	}
+ 
+@@ -98,7 +98,7 @@ func Test_parseBerTag(t *testing.T) {
+ 	}{
+ 		{
+ 			data:          []byte{},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0b000001},
+@@ -126,7 +126,7 @@ func Test_parseBerTag(t *testing.T) {
+ 			expectedTag:         uint32(binary.BigEndian.Uint16([]byte{0b10111111, 0b10101111})),
+ 			expectedPrimitive:   false,
+ 			expectedParsedBytes: 2,
+-			expectedError:       cardErrors.ErrInvalidLength,
++			expectedError:       carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:                []byte{0b10111111, 0b10101111, 0b011010101},
+diff --git a/card/card.go b/card/card.go
+index 6d2b938..b4d1108 100644
+--- a/card/card.go
++++ b/card/card.go
+@@ -12,7 +12,7 @@ import (
+ 	doc "github.com/ubavic/bas-celik/v2/document"
+ )
+ 
+-// Represents a physical or virtual smart card.
++// Card represents a physical or virtual smart card.
+ // Essentially it is just a wrapper for the scard.Card type,
+ // but it also allows virtual cards which can be useful for testing.
+ type Card interface {
+@@ -22,8 +22,8 @@ type Card interface {
+ 	EndTransaction(scard.Disposition) error
+ }
+ 
+-// Represents a smart card with a document.
+-// All types of documents that Bas Celik can read should satisfy this interface
++// CardDocument represents a smart card with a document.
++// All types of documents that Bas Celik can read should satisfy this interface.
+ type CardDocument interface {
+ 	ReadFile([]byte) ([]byte, error)
+ 	InitCard() error
+@@ -33,23 +33,29 @@ type CardDocument interface {
+ 	Atr() Atr
+ }
+ 
+-// Represents a different types of smart card documents.
+-// Each value of `CardDocumentType` is represented with a struct
+-// that satisfies `CardDocument` interface.
++// CardDocumentType represents different types of smart card documents.
++// Each value of CardDocumentType is represented with a struct
++// that satisfies CardDocument interface.
+ type CardDocumentType uint8
+ 
+ const (
++	// UnknownDocumentCardType represents an unknown or unsupported card type.
+ 	UnknownDocumentCardType = CardDocumentType(iota)
+-	ApolloIdDocumentCardType
+-	GemaltoIdDocumentCardType
++	// ApolloIDDocumentCardType represents Apollo ID cards.
++	ApolloIDDocumentCardType
++	// GemaltoIDDocumentCardType represents Gemalto ID cards.
++	GemaltoIDDocumentCardType
++	// MedicalDocumentCardType represents medical insurance cards.
+ 	MedicalDocumentCardType
++	// VehicleDocumentCardType represents vehicle registration cards.
+ 	VehicleDocumentCardType
+ )
+ 
++// ErrUnknownCard is returned when the card type cannot be determined.
+ var ErrUnknownCard = errors.New("unknown card")
+ 
+-// Detects Card Document from card's ATR
+-// Ambiguous cases are solved by reading specific card content
++// DetectCardDocument detects the card document type from card's ATR.
++// Ambiguous cases are solved by reading specific card content.
+ func DetectCardDocument(sc Card) (CardDocument, error) {
+ 	smartCardStatus, err := sc.Status()
+ 	if err != nil {
+@@ -62,10 +68,10 @@ func DetectCardDocument(sc Card) (CardDocument, error) {
+ 
+ 	for _, cardType := range possibleCardTypes {
+ 		switch cardType {
+-		case ApolloIdDocumentCardType:
++		case ApolloIDDocumentCardType:
+ 			card := &Apollo{atr: atr, smartCard: sc}
+ 			return card, nil
+-		case GemaltoIdDocumentCardType:
++		case GemaltoIDDocumentCardType:
+ 			card := Gemalto{atr: atr, smartCard: sc}
+ 			if card.Test() {
+ 				return &card, nil
+diff --git a/card/cardErrors/error.go b/card/cardErrors/error.go
+deleted file mode 100644
+index e0303fc..0000000
+--- a/card/cardErrors/error.go
++++ /dev/null
+@@ -1,6 +0,0 @@
+-package cardErrors
+-
+-import "errors"
+-
+-var ErrInvalidLength = errors.New("invalid length")
+-var ErrInvalidFormat = errors.New("invalid format")
+diff --git a/card/carderrors/error.go b/card/carderrors/error.go
+new file mode 100644
+index 0000000..c22a104
+--- /dev/null
++++ b/card/carderrors/error.go
+@@ -0,0 +1,10 @@
++// Package carderrors defines error types used when working with smart cards.
++package carderrors
++
++import "errors"
++
++// ErrInvalidLength is returned when data has invalid length.
++var ErrInvalidLength = errors.New("invalid length")
++
++// ErrInvalidFormat is returned when data has invalid format.
++var ErrInvalidFormat = errors.New("invalid format")
+diff --git a/card/gemalto.go b/card/gemalto.go
+index bd59d40..9601937 100644
+--- a/card/gemalto.go
++++ b/card/gemalto.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/document"
+ )
+ 
++// GEMALTO_ATR_1 is the Answer To Reset sequence for Gemalto ID cards (original version).
+ var GEMALTO_ATR_1 = Atr([]byte{
+ 	0x3B, 0xFF, 0x94, 0x00, 0x00, 0x81, 0x31, 0x80,
+ 	0x43, 0x80, 0x31, 0x80, 0x65, 0xB0, 0x85, 0x02,
+@@ -21,21 +22,21 @@ var GEMALTO_ATR_1 = Atr([]byte{
+ 	0x79,
+ })
+ 
+-// Available since January 2023 (maybe). Replaced very soon with an even newer version.
++// GEMALTO_ATR_2 is available since January 2023 (maybe). Replaced very soon with an even newer version.
+ var GEMALTO_ATR_2 = Atr([]byte{
+ 	0x3B, 0xF9, 0x96, 0x00, 0x00, 0x80, 0x31, 0xFE,
+ 	0x45, 0x53, 0x43, 0x45, 0x37, 0x20, 0x47, 0x43,
+ 	0x4E, 0x33, 0x5E,
+ })
+ 
+-// Available since July 2023.
++// GEMALTO_ATR_3 is available since July 2023.
+ var GEMALTO_ATR_3 = Atr([]byte{
+ 	0x3B, 0x9E, 0x96, 0x80, 0x31, 0xFE, 0x45, 0x53,
+ 	0x43, 0x45, 0x20, 0x38, 0x2E, 0x30, 0x2D, 0x43,
+ 	0x31, 0x56, 0x30, 0x0D, 0x0A, 0x6F,
+ })
+ 
+-// Available since June 2024.
++// GEMALTO_ATR_4 is available since June 2024.
+ var GEMALTO_ATR_4 = Atr([]byte{
+ 	0x3B, 0x9E, 0x96, 0x80, 0x31, 0xFE, 0x45, 0x53,
+ 	0x43, 0x45, 0x20, 0x38, 0x2E, 0x30, 0x2D, 0x43,
+@@ -54,6 +55,7 @@ type Gemalto struct {
+ 	certificates  []*x509.Certificate
+ }
+ 
++// InitCard initializes the Gemalto card by selecting the appropriate applet.
+ func (card *Gemalto) InitCard() error {
+ 	data := []byte{0xF3, 0x81, 0x00, 0x00, 0x02, 0x53, 0x45, 0x52, 0x49, 0x44, 0x01}
+ 	apu := buildAPDU(0x00, 0xA4, 0x04, 0x00, data, 0)
+@@ -91,6 +93,7 @@ func (card *Gemalto) InitCard() error {
+ 	return fmt.Errorf("initializing identity document card: unknown card type")
+ }
+ 
++// ReadCard reads all files from the Gemalto card.
+ func (card *Gemalto) ReadCard() error {
+ 	var err error
+ 
+@@ -119,25 +122,26 @@ func (card *Gemalto) ReadCard() error {
+ 	return nil
+ }
+ 
++// GetDocument parses and returns the ID document from the Gemalto card.
+ func (card *Gemalto) GetDocument() (document.Document, error) {
+-	doc := document.IdDocument{}
++	doc := document.IDDocument{}
+ 
+-	err := parseIdDocumentFile(card.documentFile, &doc)
++	err := parseIDDocumentFile(card.documentFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing document file: %w", err)
+ 	}
+ 
+-	err = parseIdPersonalFile(card.personalFile, &doc)
++	err = parseIDPersonalFile(card.personalFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing personal file: %w", err)
+ 	}
+ 
+-	err = parseIdResidenceFile(card.residenceFile, &doc)
++	err = parseIDResidenceFile(card.residenceFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing residence file: %w", err)
+ 	}
+ 
+-	err = parseAndAssignIdPhotoFile(card.photoFile, &doc)
++	err = parseAndAssignIDPhotoFile(card.photoFile, &doc)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("parsing photo file: %w", err)
+ 	}
+@@ -145,10 +149,12 @@ func (card *Gemalto) GetDocument() (document.Document, error) {
+ 	return &doc, nil
+ }
+ 
++// Atr returns the Answer To Reset of the Gemalto card.
+ func (card *Gemalto) Atr() Atr {
+ 	return card.atr
+ }
+ 
++// ReadFile reads a file from the Gemalto card.
+ func (card *Gemalto) ReadFile(name []byte) ([]byte, error) {
+ 	output := make([]byte, 0)
+ 
+@@ -237,6 +243,7 @@ func (card *Gemalto) selectFile(name []byte, selectionMethod, selectionOption by
+ 	return rsp, nil
+ }
+ 
++// Test verifies whether the Gemalto card can be read.
+ func (card *Gemalto) Test() bool {
+ 	err := card.InitCard()
+ 	if err != nil {
+@@ -247,7 +254,7 @@ func (card *Gemalto) Test() bool {
+ 	return err == nil
+ }
+ 
+-// Initialize card's cryptography application
++// InitCrypto initializes the card's cryptography application by selecting the PKCS-15 applet.
+ func (card *Gemalto) InitCrypto() error {
+ 	aid := []byte{0xA0, 0x00, 0x00, 0x00, 0x63, 0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35}
+ 
+@@ -263,8 +270,7 @@ func (card *Gemalto) InitCrypto() error {
+ 	return nil
+ }
+ 
+-// Returns number of tries left, and occurred error.
+-// -1 signifies unknown number of tries left
++// ChangePin changes the card's PIN from oldPin to newPin and returns the number of tries left (-1 if unknown) and any error encountered.
+ func (card *Gemalto) ChangePin(newPin, oldPin string) (int, error) {
+ 	err := card.smartCard.BeginTransaction()
+ 	if err != nil {
+@@ -318,6 +324,7 @@ func (card *Gemalto) ChangePin(newPin, oldPin string) (int, error) {
+ 	return -1, nil
+ }
+ 
++// ReadSignatures reads the two signature files from the Gemalto card.
+ func (card *Gemalto) ReadSignatures() error {
+ 	rsp, err := card.ReadFile([]byte{0x0F, 0x1C})
+ 	if err != nil {
+@@ -334,6 +341,7 @@ func (card *Gemalto) ReadSignatures() error {
+ 	return nil
+ }
+ 
++// LoadCertificates loads and parses the X.509 certificates from the Gemalto card's cryptography application.
+ func (card *Gemalto) LoadCertificates() error {
+ 	if card.certificates != nil {
+ 		return nil
+@@ -393,6 +401,7 @@ func (card *Gemalto) LoadCertificates() error {
+ 	return errors.Join(allErrors...)
+ }
+ 
++// GetCertificates returns the list of certificates stored on the Gemalto card.
+ func (card *Gemalto) GetCertificates() []x509.Certificate {
+ 	certs := make([]x509.Certificate, 0, len(card.certificates))
+ 
+diff --git a/card/idCard.go b/card/idCard.go
+index 810bfa0..50f4184 100644
+--- a/card/idCard.go
++++ b/card/idCard.go
+@@ -10,19 +10,19 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
+-// Location of the file with document data.
++// ID_DOCUMENT_FILE_LOC is the location of the file with document data.
+ var ID_DOCUMENT_FILE_LOC = []byte{0x0F, 0x02}
+ 
+-// Location of the file with personal data.
++// ID_PERSONAL_FILE_LOC is the location of the file with personal data.
+ var ID_PERSONAL_FILE_LOC = []byte{0x0F, 0x03}
+ 
+-// Location of the file with residence data.
++// ID_RESIDENCE_FILE_LOC is the location of the file with residence data.
+ var ID_RESIDENCE_FILE_LOC = []byte{0x0F, 0x04}
+ 
+-// Location of the the portrait. Portrait is encoded as JPEG.
++// ID_PHOTO_FILE_LOC is the location of the portrait. Portrait is encoded as JPEG.
+ var ID_PHOTO_FILE_LOC = []byte{0x0F, 0x06}
+ 
+-func parseIdDocumentFile(data []byte, doc *document.IdDocument) error {
++func parseIDDocumentFile(data []byte, doc *document.IDDocument) error {
+ 	fields, err := tlv.ParseTLV(data)
+ 	if err != nil {
+ 		return err
+@@ -41,7 +41,7 @@ func parseIdDocumentFile(data []byte, doc *document.IdDocument) error {
+ 	return nil
+ }
+ 
+-func parseIdPersonalFile(data []byte, doc *document.IdDocument) error {
++func parseIDPersonalFile(data []byte, doc *document.IDDocument) error {
+ 	fields, err := tlv.ParseTLV(data)
+ 	if err != nil {
+ 		return err
+@@ -65,7 +65,7 @@ func parseIdPersonalFile(data []byte, doc *document.IdDocument) error {
+ 	return nil
+ }
+ 
+-func parseIdResidenceFile(data []byte, doc *document.IdDocument) error {
++func parseIDResidenceFile(data []byte, doc *document.IDDocument) error {
+ 	fields, err := tlv.ParseTLV(data)
+ 	if err != nil {
+ 		return err
+@@ -86,7 +86,7 @@ func parseIdResidenceFile(data []byte, doc *document.IdDocument) error {
+ 	return nil
+ }
+ 
+-func parseAndAssignIdPhotoFile(data []byte, doc *document.IdDocument) error {
++func parseAndAssignIDPhotoFile(data []byte, doc *document.IDDocument) error {
+ 	img, _, err := image.Decode(bytes.NewReader(data))
+ 	if err != nil {
+ 		return fmt.Errorf("decoding photo file: %w", err)
+diff --git a/card/medical.go b/card/medical.go
+index 545cef4..ec71dca 100644
+--- a/card/medical.go
++++ b/card/medical.go
+@@ -13,7 +13,7 @@ import (
+ 	"golang.org/x/text/transform"
+ )
+ 
+-// Represents a smart card that holds a Serbian medical insurance document.
++// MedicalCard represents a smart card that holds a Serbian medical insurance document.
+ type MedicalCard struct {
+ 	atr                  Atr
+ 	smartCard            Card
+@@ -23,31 +23,32 @@ type MedicalCard struct {
+ 	variableAdminFile    []byte
+ }
+ 
+-// Possibly the first version of the medical card. Newer version has the GEMALTO_ATR_2 for the ATR.
++// MEDICAL_ATR_1 is possibly the first version of the medical card. Newer version has the GEMALTO_ATR_2 for the ATR.
+ var MEDICAL_ATR_1 = Atr([]byte{
+ 	0x3B, 0xF4, 0x13, 0x00, 0x00, 0x81, 0x31, 0xFE,
+ 	0x45, 0x52, 0x46, 0x5A, 0x4F, 0xED,
+ })
+ 
+-// Available since March 2023?
++// MEDICAL_ATR_2 is available since March 2023.
+ var MEDICAL_ATR_2 = Atr([]byte{
+ 	0x3B, 0x9E, 0x97, 0x80, 0x31, 0xFE, 0x45, 0x53,
+ 	0x43, 0x45, 0x20, 0x38, 0x2E, 0x30, 0x2D, 0x43,
+ 	0x31, 0x56, 0x30, 0x0D, 0x0A, 0x6E,
+ })
+ 
+-// Location of the file with document data.
++// MED_DOCUMENT_FILE_LOC is the location of the file with document data.
+ var MED_DOCUMENT_FILE_LOC = []byte{0x0D, 0x01}
+ 
+-// Location of the file with fixed personal data.
++// MED_FIXED_PERSONAL_FILE_LOC is the location of the file with fixed personal data.
+ var MED_FIXED_PERSONAL_FILE_LOC = []byte{0x0D, 0x02}
+ 
+-// Location of the file with variable personal data.
++// MED_VARIABLE_PERSONAL_FILE_LOC is the location of the file with variable personal data.
+ var MED_VARIABLE_PERSONAL_FILE_LOC = []byte{0x0D, 0x03}
+ 
+-// Location of the file with variable administrative data.
++// MED_VARIABLE_ADMIN_FILE_LOC is the location of the file with variable administrative data.
+ var MED_VARIABLE_ADMIN_FILE_LOC = []byte{0x0D, 0x04}
+ 
++// InitCard initializes the medical card.
+ func (card *MedicalCard) InitCard() error {
+ 	s1 := []byte{0xF3, 0x81, 0x00, 0x00, 0x02, 0x53, 0x45, 0x52, 0x56, 0x53, 0x5A, 0x4B, 0x01}
+ 	apu := buildAPDU(0x00, 0xA4, 0x04, 0x00, s1, 0)
+@@ -64,6 +65,7 @@ func (card *MedicalCard) InitCard() error {
+ 	return nil
+ }
+ 
++// ReadCard reads all files from the medical card.
+ func (card *MedicalCard) ReadCard() error {
+ 	var err error
+ 
+@@ -90,6 +92,7 @@ func (card *MedicalCard) ReadCard() error {
+ 	return nil
+ }
+ 
++// GetDocument parses and returns the medical document from the card.
+ func (card *MedicalCard) GetDocument() (document.Document, error) {
+ 	doc := document.MedicalDocument{}
+ 
+@@ -116,6 +119,7 @@ func (card *MedicalCard) GetDocument() (document.Document, error) {
+ 	return &doc, nil
+ }
+ 
++// Atr returns the Answer To Reset of the medical card.
+ func (card *MedicalCard) Atr() Atr {
+ 	return card.atr
+ }
+@@ -134,6 +138,7 @@ func descramble(fields map[uint][]byte, tag uint) {
+ 	fields[tag] = []byte{}
+ }
+ 
++// ReadFile reads a file from the medical card.
+ func (card *MedicalCard) ReadFile(name []byte) ([]byte, error) {
+ 	output := make([]byte, 0)
+ 
+@@ -186,7 +191,8 @@ func (card *MedicalCard) selectFile(name []byte) ([]byte, error) {
+ 	return rsp, nil
+ }
+ 
+-// Newer medical cards share ATR with the ID cards (GEMALTO_ATR_2)
++// Test verifies whether the medical card can be read.
++// Newer medical cards share ATR with the ID cards (GEMALTO_ATR_2).
+ func (card *MedicalCard) Test() bool {
+ 	s1 := []byte{0xF3, 0x81, 0x00, 0x00, 0x02, 0x53, 0x45, 0x52, 0x56, 0x53, 0x5A, 0x4B, 0x01}
+ 	apu := buildAPDU(0x00, 0xA4, 0x04, 0x00, s1, 0)
+@@ -218,7 +224,7 @@ func parseMedicalDocumentFile(data []byte, doc *document.MedicalDocument) error
+ 	descramble(fields, 1553)
+ 	tlv.AssignField(fields, 1553, &doc.InsurerName)
+ 	tlv.AssignField(fields, 1554, &doc.InsurerID)
+-	tlv.AssignField(fields, 1555, &doc.CardId)
++	tlv.AssignField(fields, 1555, &doc.CardID)
+ 	tlv.AssignField(fields, 1557, &doc.DateOfIssue)
+ 	localization.FormatDate(&doc.DateOfIssue)
+ 	tlv.AssignField(fields, 1558, &doc.DateOfExpiry)
+@@ -291,7 +297,7 @@ func parseMedicalVariableAdminFile(data []byte, doc *document.MedicalDocument) e
+ 	descramble(fields, 1616)
+ 	tlv.AssignField(fields, 1616, &doc.CarrierRelationship)
+ 	tlv.AssignBoolField(fields, 1617, &doc.CarrierFamilyMember)
+-	tlv.AssignField(fields, 1618, &doc.CarrierIdNumber)
++	tlv.AssignField(fields, 1618, &doc.CarrierIDNumber)
+ 	tlv.AssignField(fields, 1619, &doc.CarrierInsurantNumber)
+ 	descramble(fields, 1620)
+ 	tlv.AssignField(fields, 1620, &doc.CarrierFamilyName)
+@@ -309,9 +315,9 @@ func parseMedicalVariableAdminFile(data []byte, doc *document.MedicalDocument) e
+ 	tlv.AssignField(fields, 1630, &doc.TaxpayerName)
+ 	descramble(fields, 1631)
+ 	tlv.AssignField(fields, 1631, &doc.TaxpayerResidence)
+-	tlv.AssignField(fields, 1632, &doc.TaxpayerIdNumber)
+-	if len(doc.TaxpayerIdNumber) == 0 {
+-		tlv.AssignField(fields, 1633, &doc.TaxpayerIdNumber)
++	tlv.AssignField(fields, 1632, &doc.TaxpayerIDNumber)
++	if len(doc.TaxpayerIDNumber) == 0 {
++		tlv.AssignField(fields, 1633, &doc.TaxpayerIDNumber)
+ 	}
+ 	tlv.AssignField(fields, 1634, &doc.TaxpayerActivityCode)
+ 
+diff --git a/card/medical_test.go b/card/medical_test.go
+index 5c81934..2677706 100644
+--- a/card/medical_test.go
++++ b/card/medical_test.go
+@@ -38,17 +38,21 @@ func Test_descramble(t *testing.T) {
+ 		t.Run(
+ 			fmt.Sprintf("Case %d", i),
+ 			func(t *testing.T) {
++				if i < 0 {
++					t.Errorf("Invalid negative test case index %d", i)
++				}
++				idx := uint(i)
+ 				decoded, err := hex.DecodeString(testCase.data)
+ 				if err != nil {
+ 					t.Errorf("Unexpected error %v", err)
+ 				}
+ 
+ 				fields := make(map[uint][]byte, 0)
+-				fields[uint(i)] = decoded
++				fields[idx] = decoded
+ 
+-				descramble(fields, uint(i))
+-				if !slices.Equal(fields[uint(i)], []byte(testCase.expectedData)) {
+-					t.Errorf("Got %s, but expected %s", string(fields[uint(i)]), testCase.expectedData)
++				descramble(fields, idx)
++				if !slices.Equal(fields[idx], []byte(testCase.expectedData)) {
++					t.Errorf("Got %s, but expected %s", string(fields[idx]), testCase.expectedData)
+ 				}
+ 			},
+ 		)
+diff --git a/card/pin.go b/card/pin.go
+index 471c93a..dd432ee 100644
+--- a/card/pin.go
++++ b/card/pin.go
+@@ -5,8 +5,7 @@ import (
+ 	"unicode"
+ )
+ 
+-// Checks if the PIN consists only of digits,
+-// and it's length is between 4 and 8.
++// ValidatePin checks if the PIN consists only of digits and its length is between 4 and 8.
+ func ValidatePin(pin string) bool {
+ 	pinLength := len(pin)
+ 	if pinLength < 4 || pinLength > 8 {
+@@ -22,7 +21,7 @@ func ValidatePin(pin string) bool {
+ 	return true
+ }
+ 
+-// Creates a 8 byte slice containing the PIN at the beginning.
++// PadPin creates an 8 byte slice containing the PIN at the beginning.
+ func PadPin(pin string) []byte {
+ 	data := make([]byte, 8)
+ 
+@@ -35,6 +34,7 @@ func PadPin(pin string) []byte {
+ 	return data
+ }
+ 
++// PinTriesLeft returns the number of PIN attempts remaining based on the response.
+ func PinTriesLeft(rsp []byte) int {
+ 	if slices.Equal(rsp, []byte{0x63, 0xC0}) || slices.Equal(rsp, []byte{0x69, 0x83}) {
+ 		return 0
+diff --git a/card/smartCard.go b/card/smartCard.go
+index e4237a1..c59bf46 100644
+--- a/card/smartCard.go
++++ b/card/smartCard.go
+@@ -2,11 +2,13 @@ package card
+ 
+ import "github.com/ebfe/scard"
+ 
++// VirtualCard represents a virtual smart card for testing purposes.
+ type VirtualCard struct {
+ 	atr   []byte
+ 	files map[uint32][]byte
+ }
+ 
++// MakeVirtualCard creates a new virtual card with the given ATR and file system.
+ func MakeVirtualCard(atr []byte, fs map[uint32][]byte) *VirtualCard {
+ 	vc := VirtualCard{
+ 		atr:   atr,
+@@ -16,11 +18,13 @@ func MakeVirtualCard(atr []byte, fs map[uint32][]byte) *VirtualCard {
+ 	return &vc
+ }
+ 
++// Status returns the status of the virtual card.
+ func (card *VirtualCard) Status() (*scard.CardStatus, error) {
+ 	status := scard.CardStatus{Atr: card.atr, Reader: "Virtual", State: scard.Powered}
+ 	return &status, nil
+ }
+ 
+-func Transmit(cmd []byte) ([]byte, error) {
++// Transmit simulates transmitting a command to the virtual card.
++func Transmit(_ []byte) ([]byte, error) {
+ 	return []byte{0x90, 0x00}, nil
+ }
+diff --git a/card/state.go b/card/state.go
+index 0bd36a7..d6b64a1 100644
+--- a/card/state.go
++++ b/card/state.go
+@@ -6,6 +6,7 @@ import (
+ 	"github.com/ebfe/scard"
+ )
+ 
++// FormatState formats the smart card state flags as a human-readable string.
+ func FormatState(state scard.StateFlag) string {
+ 	states := []string{}
+ 
+diff --git a/card/tlv/tlv.go b/card/tlv/tlv.go
+index e6073e7..3136d64 100644
+--- a/card/tlv/tlv.go
++++ b/card/tlv/tlv.go
+@@ -1,17 +1,18 @@
++// Package tlv provides functions for parsing TLV (Tag-Length-Value) encoded data.
+ package tlv
+ 
+ import (
+ 	"encoding/binary"
+ 	"fmt"
+ 
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ )
+ 
+-// Parses simple TLV-encoded data and returns a map of tags to values.
++// ParseTLV parses simple TLV-encoded data and returns a map of tags to values.
+ // It assumes that tag and length are encoded with two bytes each.
+ func ParseTLV(data []byte) (map[uint][]byte, error) {
+ 	if len(data) == 0 {
+-		return nil, cardErrors.ErrInvalidLength
++		return nil, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	m := make(map[uint][]byte)
+@@ -19,7 +20,7 @@ func ParseTLV(data []byte) (map[uint][]byte, error) {
+ 
+ 	for {
+ 		if uint(len(data)) <= offset+4 {
+-			return nil, fmt.Errorf("parsing TLV record tag and length: %w", cardErrors.ErrInvalidLength)
++			return nil, fmt.Errorf("parsing TLV record tag and length: %w", carderrors.ErrInvalidLength)
+ 		}
+ 
+ 		tag := uint(binary.LittleEndian.Uint16(data[offset:]))
+@@ -28,7 +29,7 @@ func ParseTLV(data []byte) (map[uint][]byte, error) {
+ 		offset += 4
+ 
+ 		if offset+length > uint(len(data)) {
+-			return nil, fmt.Errorf("parsing TLV record data: %w", cardErrors.ErrInvalidLength)
++			return nil, fmt.Errorf("parsing TLV record data: %w", carderrors.ErrInvalidLength)
+ 		}
+ 
+ 		value := data[offset : offset+length]
+@@ -43,7 +44,7 @@ func ParseTLV(data []byte) (map[uint][]byte, error) {
+ 	return m, nil
+ }
+ 
+-// Assigns the value from the provided fields map to the target string, based on the specified tag.
++// AssignField assigns the value from the provided fields map to the target string, based on the specified tag.
+ // If the tag is not present in the map, the target is set to an empty string.
+ func AssignField[T comparable](fields map[T][]byte, tag T, target *string) {
+ 	val, ok := fields[tag]
+@@ -54,7 +55,7 @@ func AssignField[T comparable](fields map[T][]byte, tag T, target *string) {
+ 	}
+ }
+ 
+-// Assigns a boolean value from the provided fields map to the target, based on the specified tag.
++// AssignBoolField assigns a boolean value from the provided fields map to the target, based on the specified tag.
+ // If the tag is not present in the map or the value is not 0x31, the target is set to false.
+ func AssignBoolField(fields map[uint][]byte, tag uint, target *bool) {
+ 	val, ok := fields[tag]
+diff --git a/card/tlv/tlv_test.go b/card/tlv/tlv_test.go
+index 11231d3..c9ecf73 100644
+--- a/card/tlv/tlv_test.go
++++ b/card/tlv/tlv_test.go
+@@ -6,7 +6,7 @@ import (
+ 	"reflect"
+ 	"testing"
+ 
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ 	"github.com/ubavic/bas-celik/v2/card/tlv"
+ )
+ 
+@@ -18,7 +18,7 @@ func Test_parseTLV(t *testing.T) {
+ 	}{
+ 		{
+ 			data:          []byte{},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data: []byte{0x01, 0x00, 0x05, 0x00, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x09, 0x00, 0x05, 0x00, 0x57, 0x6F, 0x72, 0x6C, 0x64},
+@@ -30,15 +30,15 @@ func Test_parseTLV(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x01, 0x00, 0x05, 0x00, 0x48, 0x65},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:          []byte{0x02, 0x00},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:          []byte{0x02, 0x00, 0x01, 0x00},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data: []byte{0x02, 0x00, 0x01, 0x00, 0x01},
+diff --git a/card/unknownCard.go b/card/unknownCard.go
+index 6774e40..6e0a504 100644
+--- a/card/unknownCard.go
++++ b/card/unknownCard.go
+@@ -6,31 +6,38 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/document"
+ )
+ 
++// UnknownDocumentCard represents an unknown or unsupported card type.
+ type UnknownDocumentCard struct {
+ 	atr       Atr
+ 	smartCard Card
+ }
+ 
++// Atr returns the ATR of the unknown card.
+ func (card *UnknownDocumentCard) Atr() Atr {
+ 	return card.atr
+ }
+ 
++// ReadFile is not implemented for unknown cards.
+ func (card *UnknownDocumentCard) ReadFile(_ []byte) ([]byte, error) {
+ 	return nil, errors.New("not implemented")
+ }
+ 
++// InitCard does nothing for unknown cards.
+ func (card *UnknownDocumentCard) InitCard() error {
+ 	return nil
+ }
+ 
++// ReadCard does nothing for unknown cards.
+ func (card *UnknownDocumentCard) ReadCard() error {
+ 	return nil
+ }
+ 
++// GetDocument returns nil for unknown cards.
+ func (card *UnknownDocumentCard) GetDocument() (document.Document, error) {
+ 	return nil, nil
+ }
+ 
++// Test always returns true for unknown cards.
+ func (card *UnknownDocumentCard) Test() bool {
+ 	return true
+ }
+diff --git a/card/vehicle.go b/card/vehicle.go
+index d2b37dc..9fe01c4 100644
+--- a/card/vehicle.go
++++ b/card/vehicle.go
+@@ -5,26 +5,26 @@ import (
+ 	"fmt"
+ 
+ 	"github.com/ubavic/bas-celik/v2/card/ber"
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ 	"github.com/ubavic/bas-celik/v2/document"
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
+-// Represents a smart card that contains a Serbian vehicle document.
++// VehicleCard represents a smart card that contains a Serbian vehicle document.
+ type VehicleCard struct {
+ 	atr       Atr
+ 	smartCard Card
+ 	files     [4][]byte
+ }
+ 
+-// Possibly deprecated.
++// VEHICLE_ATR_0 is possibly deprecated.
+ var VEHICLE_ATR_0 = Atr([]byte{
+ 	0x3B, 0xDB, 0x96, 0x00, 0x80, 0xB1, 0xFE, 0x45,
+ 	0x1F, 0x83, 0x00, 0x31, 0xC0, 0x64, 0x1A, 0x18,
+ 	0x01, 0x00, 0x0F, 0x90, 0x00, 0x52,
+ })
+ 
+-// Same as GEMALTO_ATR_1
++// VEHICLE_ATR_1 is the same as GEMALTO_ATR_1.
+ var VEHICLE_ATR_1 = Atr([]byte{
+ 	0x3B, 0xFF, 0x94, 0x00, 0x00, 0x81, 0x31, 0x80,
+ 	0x43, 0x80, 0x31, 0x80, 0x65, 0xB0, 0x85, 0x02,
+@@ -32,25 +32,28 @@ var VEHICLE_ATR_1 = Atr([]byte{
+ 	0x79,
+ })
+ 
++// VEHICLE_ATR_2 is an Answer To Reset sequence for vehicle cards.
+ var VEHICLE_ATR_2 = Atr([]byte{
+ 	0x3B, 0x9D, 0x13, 0x81, 0x31, 0x60, 0x37, 0x80,
+ 	0x31, 0xC0, 0x69, 0x4D, 0x54, 0x43, 0x4F, 0x53,
+ 	0x73, 0x02, 0x02, 0x04, 0x40,
+ })
+ 
++// VEHICLE_ATR_3 is an Answer To Reset sequence for vehicle cards.
+ var VEHICLE_ATR_3 = Atr([]byte{
+ 	0x3B, 0x9D, 0x13, 0x81, 0x31, 0x60, 0x37, 0x80,
+ 	0x31, 0xC0, 0x69, 0x4D, 0x54, 0x43, 0x4F, 0x53,
+ 	0x73, 0x02, 0x05, 0x04, 0x47,
+ })
+ 
++// VEHICLE_ATR_4 is an Answer To Reset sequence for vehicle cards.
+ var VEHICLE_ATR_4 = Atr([]byte{
+ 	0x3B, 0x9D, 0x18, 0x81, 0x31, 0xFC, 0x35, 0x80,
+ 	0x31, 0xC0, 0x69, 0x4D, 0x54, 0x43, 0x4F, 0x53,
+ 	0x73, 0x02, 0x05, 0x02, 0xD4,
+ })
+ 
+-// Initializes vehicle card by trying three different sets of commands.
++// InitCard initializes the vehicle card by trying three different sets of commands.
+ // The procedure is reverse-engineered from the official binary.
+ func (card VehicleCard) InitCard() error {
+ 	tryToSelect := func(cmd1, cmd2, cmd3 []byte) error {
+@@ -74,9 +77,8 @@ func (card VehicleCard) InitCard() error {
+ 			}
+ 
+ 			return nil
+-		} else {
+-			return fmt.Errorf("selecting file: %w", err)
+ 		}
++		return fmt.Errorf("selecting file: %w", err)
+ 	}
+ 
+ 	err := tryToSelect(
+@@ -106,6 +108,7 @@ func (card VehicleCard) InitCard() error {
+ 	return fmt.Errorf("card not responsive: %w", err)
+ }
+ 
++// ReadCard reads all necessary files from the vehicle card.
+ func (card *VehicleCard) ReadCard() error {
+ 	var err error
+ 
+@@ -119,6 +122,7 @@ func (card *VehicleCard) ReadCard() error {
+ 	return nil
+ }
+ 
++// GetDocument extracts the vehicle document data from the read files.
+ func (card *VehicleCard) GetDocument() (document.Document, error) {
+ 	doc := document.VehicleDocument{}
+ 	data := ber.BER{}
+@@ -138,7 +142,7 @@ func (card *VehicleCard) GetDocument() (document.Document, error) {
+ 	data.AssignFrom(&doc.RegistrationNumberOfVehicle, 0x71, 0x81)
+ 	data.AssignFrom(&doc.DateOfFirstRegistration, 0x71, 0x82)
+ 	localization.FormatDateYMD(&doc.DateOfFirstRegistration)
+-	data.AssignFrom(&doc.VehicleIdNumber, 0x71, 0x8A)
++	data.AssignFrom(&doc.VehicleIDNumber, 0x71, 0x8A)
+ 	data.AssignFrom(&doc.VehicleMass, 0x71, 0x8C)
+ 	data.AssignFrom(&doc.ExpiryDate, 0x71, 0x8D)
+ 	localization.FormatDateYMD(&doc.ExpiryDate)
+@@ -163,7 +167,7 @@ func (card *VehicleCard) GetDocument() (document.Document, error) {
+ 	data.AssignFrom(&doc.NumberOfAxles, 0x72, 0x99)
+ 	data.AssignFrom(&doc.VehicleLoad, 0x72, 0xC4)
+ 	data.AssignFrom(&doc.YearOfProduction, 0x72, 0xC5)
+-	data.AssignFrom(&doc.EngineIdNumber, 0x72, 0xA5, 0x9E)
++	data.AssignFrom(&doc.EngineIDNumber, 0x72, 0xA5, 0x9E)
+ 	data.AssignFrom(&doc.SerialNumber, 0x72, 0xC9)
+ 	data.AssignFrom(&doc.ColourOfVehicle, 0x72, 0x9F24)
+ 	data.AssignFrom(&doc.UsersPersonalNo, 0x72, 0xC3)
+@@ -185,10 +189,12 @@ func (card *VehicleCard) GetDocument() (document.Document, error) {
+ 	return &doc, nil
+ }
+ 
++// Atr returns the ATR of the vehicle card.
+ func (card *VehicleCard) Atr() Atr {
+ 	return card.atr
+ }
+ 
++// ReadFile reads a file from the vehicle card.
+ func (card *VehicleCard) ReadFile(name []byte) ([]byte, error) {
+ 	output := make([]byte, 0)
+ 
+@@ -229,6 +235,7 @@ func (card *VehicleCard) ReadFile(name []byte) ([]byte, error) {
+ 	return output, nil
+ }
+ 
++// Test tests if the card is responsive.
+ func (card VehicleCard) Test() bool {
+ 	err := card.InitCard()
+ 	return err == nil
+@@ -236,13 +243,13 @@ func (card VehicleCard) Test() bool {
+ 
+ func parseVehicleCardFileSize(data []byte) (uint, uint, error) {
+ 	if len(data) < 1 {
+-		return 0, 0, cardErrors.ErrInvalidLength
++		return 0, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	offset := uint(data[1]) + 2
+ 
+ 	if offset >= uint(len(data)) {
+-		return 0, 0, cardErrors.ErrInvalidLength
++		return 0, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	_, _, offsetDelta1, err := ber.ParseTag(data[offset:])
+@@ -251,7 +258,7 @@ func parseVehicleCardFileSize(data []byte) (uint, uint, error) {
+ 	}
+ 
+ 	if offset+uint(offsetDelta1) >= uint(len(data)) {
+-		return 0, 0, cardErrors.ErrInvalidLength
++		return 0, 0, carderrors.ErrInvalidLength
+ 	}
+ 
+ 	dataLength, offsetDelta2, err := ber.ParseLength(data[offset+uint(offsetDelta1):])
+diff --git a/card/vehicle_test.go b/card/vehicle_test.go
+index 9f55201..2363bb4 100644
+--- a/card/vehicle_test.go
++++ b/card/vehicle_test.go
+@@ -4,7 +4,7 @@ import (
+ 	"errors"
+ 	"testing"
+ 
+-	"github.com/ubavic/bas-celik/v2/card/cardErrors"
++	"github.com/ubavic/bas-celik/v2/card/carderrors"
+ )
+ 
+ func Test_parseVehicleCardFileSize(t *testing.T) {
+@@ -16,11 +16,11 @@ func Test_parseVehicleCardFileSize(t *testing.T) {
+ 	}{
+ 		{
+ 			data:          []byte{},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data:          []byte{0x01, 0x02, 0x03, 0x04},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data: []byte{
+@@ -28,7 +28,7 @@ func Test_parseVehicleCardFileSize(t *testing.T) {
+ 				0x18, 0x65, 0x56, 0x4C, 0x2D, 0x30, 0x30, 0x31,
+ 				0x72,
+ 			},
+-			expectedError: cardErrors.ErrInvalidLength,
++			expectedError: carderrors.ErrInvalidLength,
+ 		},
+ 		{
+ 			data: []byte{
+@@ -42,7 +42,7 @@ func Test_parseVehicleCardFileSize(t *testing.T) {
+ 		},
+ 		{
+ 			data:          []byte{0x01, 0x01, 0x01, 0x00, 0x80},
+-			expectedError: cardErrors.ErrInvalidFormat,
++			expectedError: carderrors.ErrInvalidFormat,
+ 		},
+ 	}
+ 
+@@ -61,5 +61,4 @@ func Test_parseVehicleCardFileSize(t *testing.T) {
+ 			}
+ 		}
+ 	}
+-
+ }
+diff --git a/document/document.go b/document/document.go
+index d6ff115..8d71655 100644
+--- a/document/document.go
++++ b/document/document.go
+@@ -1,10 +1,10 @@
+-// Package provides type definitions fot different types of documents
++// Package document provides type definitions for different types of documents
+ // present on smart cards, as well methods for exporting those documents to different file formats.
+-// In order for `BuildPDF` methods to work properly,
+-// this package must be (pre)configured with `Configure` function.
++// In order for BuildPDF methods to work properly,
++// this package must be (pre)configured with Configure function.
+ package document
+ 
+-// Represents any document handled by Bas Celik
++// Document represents any document handled by Bas Celik.
+ type Document interface {
+ 	BuildPdf() ([]byte, string, error)   // Renders document to pdf
+ 	BuildJson() ([]byte, error)          // Renders document to json
+@@ -17,13 +17,14 @@ var (
+ 	rfzoLogo    []byte
+ )
+ 
++// DocumentConfig contains configuration for PDF rendering.
+ type DocumentConfig struct {
+ 	FontRegular []byte // regular font used for PDF render
+ 	FontBold    []byte // bold font used for PDF render
+ 	RfzoLogo    []byte // logo used in PDF render of medical cards
+ }
+ 
+-// Sets fonts and graphics used for rendering PDF
++// Configure sets fonts and graphics used for rendering PDF.
+ func Configure(config DocumentConfig) error {
+ 	fontRegular = config.FontRegular
+ 	fontBold = config.FontBold
+diff --git a/document/document_test.go b/document/document_test.go
+index 5da2354..be23b77 100644
+--- a/document/document_test.go
++++ b/document/document_test.go
+@@ -27,9 +27,16 @@ func setDocumentConfigFromLocalFiles(t *testing.T) {
+ 		t.Fatal(err.Error())
+ 	}
+ 
+-	document.Configure(documentConfig)
++	err = document.Configure(documentConfig)
++
++	if err != nil {
++		t.Fatalf("setting document config: %v", err)
++	}
+ }
+ 
+ func unsetDocumentConfig() {
+-	document.Configure(document.DocumentConfig{})
++	err := document.Configure(document.DocumentConfig{})
++	if err != nil {
++		panic(err)
++	}
+ }
+diff --git a/document/excel.go b/document/excel.go
+index 0be1d76..ed7b1ec 100644
+--- a/document/excel.go
++++ b/document/excel.go
+@@ -10,6 +10,7 @@ import (
+ 	"github.com/xuri/excelize/v2"
+ )
+ 
++// CreateExcel creates an Excel file from the given document struct.
+ func CreateExcel(document any) ([]byte, error) {
+ 	structType := reflect.TypeOf(document)
+ 	structVal := reflect.ValueOf(document)
+@@ -32,9 +33,15 @@ func CreateExcel(document any) ([]byte, error) {
+ 
+ 	currentRow := 1
+ 	putData := func(label, value string) {
+-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", currentRow), label)
+-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", currentRow), value)
+-		currentRow += 1
++		err = f.SetCellValue("Sheet1", fmt.Sprintf("A%d", currentRow), label)
++		if err != nil {
++			return
++		}
++		err = f.SetCellValue("Sheet1", fmt.Sprintf("B%d", currentRow), value)
++		if err != nil {
++			return
++		}
++		currentRow++
+ 	}
+ 
+ 	fields := reflect.VisibleFields(structType)
+diff --git a/document/id.go b/document/id.go
+index 769327f..37ffd1c 100644
+--- a/document/id.go
++++ b/document/id.go
+@@ -15,13 +15,20 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
++// ID_TYPE_APOLLO represents Apollo ID card type.
+ const ID_TYPE_APOLLO = ""
++
++// ID_TYPE_ID represents Serbian ID card type.
+ const ID_TYPE_ID = "ID"
++
++// ID_TYPE_IDENTITY_FOREIGNER represents identity card for foreigners.
+ const ID_TYPE_IDENTITY_FOREIGNER = "IF"
++
++// ID_TYPE_RESIDENCE_PERMIT represents residence permit type.
+ const ID_TYPE_RESIDENCE_PERMIT = "RP"
+ 
+-// Represents a document stored on a Serbian ID card.
+-type IdDocument struct {
++// IDDocument represents a document stored on a Serbian ID card.
++type IDDocument struct {
+ 	Portrait             image.Image
+ 	DocRegNo             string
+ 	DocumentType         string
+@@ -58,11 +65,13 @@ type IdDocument struct {
+ 	AddressLabel         string
+ }
+ 
+-func (doc *IdDocument) GetFullName() string {
++// GetFullName returns the full name of the ID document holder.
++func (doc *IDDocument) GetFullName() string {
+ 	return localization.JoinWithComma(doc.GivenName, doc.ParentGivenName, doc.Surname)
+ }
+ 
+-func (doc *IdDocument) GetFullAddress(reverse bool) string {
++// GetFullAddress returns the full address of the ID document holder.
++func (doc *IDDocument) GetFullAddress(reverse bool) string {
+ 	var streetAndNumber = doc.Street
+ 
+ 	if doc.HouseNumber != "" || doc.HouseLetter != "" || doc.Entrance != "" {
+@@ -84,11 +93,13 @@ func (doc *IdDocument) GetFullAddress(reverse bool) string {
+ 	}
+ }
+ 
+-func (doc *IdDocument) GetFullPlaceOfBirth() string {
++// GetFullPlaceOfBirth returns the full place of birth including community and state.
++func (doc *IDDocument) GetFullPlaceOfBirth() string {
+ 	return localization.JoinWithComma(doc.PlaceOfBirth, doc.CommunityOfBirth, doc.StateOfBirth)
+ }
+ 
+-func (doc *IdDocument) BuildPdf() (data []byte, fileName string, retErr error) {
++// BuildPdf creates a PDF representation of the IdDocument.
++func (doc *IDDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	defer func() {
+ 		if r := recover(); r != nil {
+ 			switch x := r.(type) {
+@@ -115,7 +126,7 @@ func (doc *IdDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 		panic(fmt.Errorf("setting font: %w", err))
+ 	}
+ 
+-	ipw := IdPdfWriter{
++	ipw := IDPdfWriter{
+ 		pdf:            &pdf,
+ 		leftMargin:     58.8,
+ 		rightMargin:    535,
+@@ -123,11 +134,12 @@ func (doc *IdDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 		doc:            doc,
+ 	}
+ 
+-	if doc.DocumentType == ID_TYPE_APOLLO || doc.DocumentType == ID_TYPE_ID {
+-		ipw.printRegularId()
+-	} else if doc.DocumentType == ID_TYPE_IDENTITY_FOREIGNER {
+-		ipw.printForeignerId()
+-	} else if doc.DocumentType == ID_TYPE_RESIDENCE_PERMIT {
++	switch doc.DocumentType {
++	case ID_TYPE_APOLLO, ID_TYPE_ID:
++		ipw.printRegularID()
++	case ID_TYPE_IDENTITY_FOREIGNER:
++		ipw.printForeignerID()
++	case ID_TYPE_RESIDENCE_PERMIT:
+ 		ipw.printResidencePermit()
+ 	}
+ 
+@@ -143,14 +155,15 @@ func (doc *IdDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	return pdf.GetBytesPdf(), fileName, nil
+ }
+ 
+-func (doc *IdDocument) BuildJson() ([]byte, error) {
++// BuildJson creates a JSON representation of the IdDocument.
++func (doc *IDDocument) BuildJson() ([]byte, error) {
+ 	var bs bytes.Buffer
+ 	err := jpeg.Encode(&bs, doc.Portrait, &jpeg.Options{Quality: 100})
+ 	if err != nil {
+ 		return nil, fmt.Errorf("creating json: %w", err)
+ 	}
+ 
+-	type Alias IdDocument
++	type Alias IDDocument
+ 	return json.Marshal(&struct {
+ 		Portrait string
+ 		*Alias
+@@ -160,12 +173,13 @@ func (doc *IdDocument) BuildJson() ([]byte, error) {
+ 	})
+ }
+ 
+-func (doc *IdDocument) BuildExcel() ([]byte, string, error) {
++// BuildExcel creates an Excel representation of the IdDocument.
++func (doc *IDDocument) BuildExcel() ([]byte, string, error) {
+ 	xlsx, err := CreateExcel(*doc)
+ 	filename := doc.formatFilename() + ".xlsx"
+ 	return xlsx, filename, err
+ }
+ 
+-func (doc *IdDocument) formatFilename() string {
++func (doc *IDDocument) formatFilename() string {
+ 	return strings.ToLower(doc.GivenName + "_" + doc.Surname)
+ }
+diff --git a/document/idPrint.go b/document/idPrint.go
+index 9a7297a..a3d0f9b 100644
+--- a/document/idPrint.go
++++ b/document/idPrint.go
+@@ -9,15 +9,16 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
+-type IdPdfWriter struct {
++// IDPdfWriter handles writing ID document data to a PDF.
++type IDPdfWriter struct {
+ 	pdf            *gopdf.GoPdf
+ 	leftMargin     float64
+ 	rightMargin    float64
+ 	textLeftMargin float64
+-	doc            *IdDocument
++	doc            *IDDocument
+ }
+ 
+-func (idw *IdPdfWriter) line(width float64) {
++func (idw *IDPdfWriter) line(width float64) {
+ 	if width > 0 {
+ 		idw.pdf.SetLineWidth(width)
+ 	}
+@@ -26,18 +27,18 @@ func (idw *IdPdfWriter) line(width float64) {
+ 	idw.pdf.Line(idw.leftMargin, y, idw.rightMargin, y)
+ }
+ 
+-func (idw *IdPdfWriter) moveY(y float64) {
++func (idw *IDPdfWriter) moveY(y float64) {
+ 	idw.pdf.SetXY(idw.pdf.GetX(), idw.pdf.GetY()+y)
+ }
+ 
+-func (idw *IdPdfWriter) cell(s string) {
++func (idw *IDPdfWriter) cell(s string) {
+ 	err := idw.pdf.Cell(nil, s)
+ 	if err != nil {
+ 		panic(fmt.Errorf("putting text: %w", err))
+ 	}
+ }
+ 
+-func (idw *IdPdfWriter) putData(label, data string) {
++func (idw *IDPdfWriter) putData(label, data string) {
+ 	y := idw.pdf.GetY()
+ 
+ 	idw.pdf.SetX(idw.textLeftMargin)
+@@ -73,373 +74,373 @@ func (idw *IdPdfWriter) putData(label, data string) {
+ 	idw.pdf.SetXY(idw.textLeftMargin, math.Max(y1, y2)+24.67)
+ }
+ 
+-func (ipw *IdPdfWriter) printRegularId() {
+-	ipw.pdf.SetLineType("solid")
+-	ipw.pdf.SetY(59.041)
+-	ipw.line(0.83)
++func (idw *IDPdfWriter) printRegularID() {
++	idw.pdf.SetLineType("solid")
++	idw.pdf.SetY(59.041)
++	idw.line(0.83)
+ 
+-	ipw.pdf.SetXY(ipw.textLeftMargin+1.0, 68.5)
++	idw.pdf.SetXY(idw.textLeftMargin+1.0, 68.5)
+ 
+-	err := ipw.pdf.SetCharSpacing(-0.2)
++	err := idw.pdf.SetCharSpacing(-0.2)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-	ipw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
++	idw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
+ 
+-	err = ipw.pdf.SetCharSpacing(-0.1)
++	err = idw.pdf.SetCharSpacing(-0.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetY(88)
++	idw.pdf.SetY(88)
+ 
+-	ipw.line(0)
++	idw.line(0)
+ 
+ 	imageY := 102.8
+ 	imageHeight := 159.0
+ 
+-	err = ipw.pdf.ImageFrom(ipw.doc.Portrait, ipw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
++	err = idw.pdf.ImageFrom(idw.doc.Portrait, idw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetLineWidth(0.48)
+-	ipw.pdf.SetFillColor(255, 255, 255)
+-	err = ipw.pdf.Rectangle(ipw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
++	idw.pdf.SetLineWidth(0.48)
++	idw.pdf.SetFillColor(255, 255, 255)
++	err = idw.pdf.Rectangle(idw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetFillColor(0, 0, 0)
++	idw.pdf.SetFillColor(0, 0, 0)
+ 
+-	ipw.pdf.SetY(276)
++	idw.pdf.SetY(276)
+ 
+-	ipw.line(1.08)
+-	ipw.moveY(8)
+-	ipw.pdf.SetX(ipw.textLeftMargin)
+-	err = ipw.pdf.SetFontSize(11.1)
++	idw.line(1.08)
++	idw.moveY(8)
++	idw.pdf.SetX(idw.textLeftMargin)
++	err = idw.pdf.SetFontSize(11.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.cell("Podaci o građaninu")
++	idw.cell("Podaci o građaninu")
+ 
+-	ipw.moveY(16)
+-	ipw.line(0)
+-	ipw.moveY(9)
++	idw.moveY(16)
++	idw.line(0)
++	idw.moveY(9)
+ 
+-	ipw.putData("Prezime:", ipw.doc.Surname)
+-	ipw.putData("Ime:", ipw.doc.GivenName)
+-	ipw.putData("Ime jednog roditelja:", ipw.doc.ParentGivenName)
+-	ipw.putData("Datum rođenja:", ipw.doc.DateOfBirth)
+-	ipw.putData("Mesto rođenja,\nopština i država:", ipw.doc.GetFullPlaceOfBirth())
++	idw.putData("Prezime:", idw.doc.Surname)
++	idw.putData("Ime:", idw.doc.GivenName)
++	idw.putData("Ime jednog roditelja:", idw.doc.ParentGivenName)
++	idw.putData("Datum rođenja:", idw.doc.DateOfBirth)
++	idw.putData("Mesto rođenja,\nopština i država:", idw.doc.GetFullPlaceOfBirth())
+ 	addressLabel := "Prebivalište\ni adresa stana:"
+-	if ipw.doc.AddressLabel == "prebivalište" {
++	if idw.doc.AddressLabel == "prebivalište" {
+ 		addressLabel = "Prebivalište:"
+ 	}
+-	ipw.putData(addressLabel, ipw.doc.GetFullAddress(true))
+-	ipw.putData("Datum promene adrese:", ipw.doc.AddressDate)
+-	ipw.putData("JMBG:", ipw.doc.PersonalNumber)
+-	ipw.putData("Pol:", ipw.doc.Sex)
+-
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.cell("Podaci o dokumentu")
+-	ipw.moveY(16)
+-
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.putData("Dokument izdaje:", ipw.doc.IssuingAuthority)
+-	ipw.putData("Broj dokumenta:", ipw.doc.DocRegNo)
+-	ipw.putData("Datum izdavanja:", ipw.doc.IssuingDate)
+-	ipw.putData("Važi do:", ipw.doc.ExpiryDate)
+-
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(3)
+-	ipw.line(0)
+-	ipw.moveY(9)
+-
+-	ipw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
+-
+-	ipw.moveY(19)
+-
+-	if ipw.pdf.GetY() < 700 {
+-		ipw.pdf.SetY(730.6)
++	idw.putData(addressLabel, idw.doc.GetFullAddress(true))
++	idw.putData("Datum promene adrese:", idw.doc.AddressDate)
++	idw.putData("JMBG:", idw.doc.PersonalNumber)
++	idw.putData("Pol:", idw.doc.Sex)
++
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(9)
++	idw.cell("Podaci o dokumentu")
++	idw.moveY(16)
++
++	idw.line(0)
++	idw.moveY(9)
++	idw.putData("Dokument izdaje:", idw.doc.IssuingAuthority)
++	idw.putData("Broj dokumenta:", idw.doc.DocRegNo)
++	idw.putData("Datum izdavanja:", idw.doc.IssuingDate)
++	idw.putData("Važi do:", idw.doc.ExpiryDate)
++
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(3)
++	idw.line(0)
++	idw.moveY(9)
++
++	idw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
++
++	idw.moveY(19)
++
++	if idw.pdf.GetY() < 700 {
++		idw.pdf.SetY(730.6)
+ 	}
+ 
+-	ipw.line(0.83)
++	idw.line(0.83)
+ 
+-	err = ipw.pdf.SetFontSize(9)
++	err = idw.pdf.SetFontSize(9)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.moveY(10)
+-	ipw.pdf.SetX(ipw.leftMargin)
+-
+-	ipw.cell("1. U čipu lične karte, podaci o imenu i prezimenu imaoca lične karte ispisani su na nacionalnom pismu onako kako su")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("ispisani na samom obrascu lične karte, dok su ostali podaci ispisani latiničkim pismom.")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("2. Ako se ime lica sastoji od dve reči čija je ukupna dužina između 20 i 30 karaktera ili prezimena od dve reči čija je")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("ukupna dužina između 30 i 36 karaktera, u čipu lične karte izdate pre 18.08.2014. godine, druga reč u imenu ili prezimenu")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("skraćuje se na prva dva karaktera")
+-
+-	ipw.moveY(15.7)
+-	ipw.line(0)
++	idw.moveY(10)
++	idw.pdf.SetX(idw.leftMargin)
++
++	idw.cell("1. U čipu lične karte, podaci o imenu i prezimenu imaoca lične karte ispisani su na nacionalnom pismu onako kako su")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("ispisani na samom obrascu lične karte, dok su ostali podaci ispisani latiničkim pismom.")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("2. Ako se ime lica sastoji od dve reči čija je ukupna dužina između 20 i 30 karaktera ili prezimena od dve reči čija je")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("ukupna dužina između 30 i 36 karaktera, u čipu lične karte izdate pre 18.08.2014. godine, druga reč u imenu ili prezimenu")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("skraćuje se na prva dva karaktera")
++
++	idw.moveY(15.7)
++	idw.line(0)
+ }
+ 
+-func (ipw *IdPdfWriter) printForeignerId() {
+-	ipw.pdf.SetLineType("solid")
+-	ipw.pdf.SetY(59.041)
+-	ipw.line(0.83)
++func (idw *IDPdfWriter) printForeignerID() {
++	idw.pdf.SetLineType("solid")
++	idw.pdf.SetY(59.041)
++	idw.line(0.83)
+ 
+-	ipw.pdf.SetXY(ipw.textLeftMargin+1.0, 64.95)
++	idw.pdf.SetXY(idw.textLeftMargin+1.0, 64.95)
+ 
+-	err := ipw.pdf.SetCharSpacing(-0.2)
++	err := idw.pdf.SetCharSpacing(-0.2)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-	ipw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
++	idw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
+ 
+-	err = ipw.pdf.SetCharSpacing(-0.1)
++	err = idw.pdf.SetCharSpacing(-0.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetY(79.8)
++	idw.pdf.SetY(79.8)
+ 
+-	ipw.line(0)
++	idw.line(0)
+ 
+ 	imageY := 86.0
+ 	imageHeight := 159.0
+ 
+-	err = ipw.pdf.ImageFrom(ipw.doc.Portrait, ipw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
++	err = idw.pdf.ImageFrom(idw.doc.Portrait, idw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetLineWidth(0.48)
+-	ipw.pdf.SetFillColor(255, 255, 255)
+-	err = ipw.pdf.Rectangle(ipw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
++	idw.pdf.SetLineWidth(0.48)
++	idw.pdf.SetFillColor(255, 255, 255)
++	err = idw.pdf.Rectangle(idw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetFillColor(0, 0, 0)
++	idw.pdf.SetFillColor(0, 0, 0)
+ 
+-	ipw.pdf.SetY(250)
++	idw.pdf.SetY(250)
+ 
+-	ipw.line(1.08)
+-	ipw.moveY(8)
+-	ipw.pdf.SetX(ipw.textLeftMargin)
+-	err = ipw.pdf.SetFontSize(11.1)
++	idw.line(1.08)
++	idw.moveY(8)
++	idw.pdf.SetX(idw.textLeftMargin)
++	err = idw.pdf.SetFontSize(11.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.cell("Podaci o strancu")
++	idw.cell("Podaci o strancu")
+ 
+-	ipw.moveY(16)
+-	ipw.line(0)
+-	ipw.moveY(9)
++	idw.moveY(16)
++	idw.line(0)
++	idw.moveY(9)
+ 
+-	ipw.putData("Prezime:", ipw.doc.Surname)
+-	ipw.putData("Ime:", ipw.doc.GivenName)
+-	ipw.putData("Državljanstvo:", ipw.doc.NationalityFull)
+-	ipw.putData("Datum rođenja:", ipw.doc.DateOfBirth)
+-	ipw.putData("Osnov boravka:", ipw.doc.PurposeOfStay)
++	idw.putData("Prezime:", idw.doc.Surname)
++	idw.putData("Ime:", idw.doc.GivenName)
++	idw.putData("Državljanstvo:", idw.doc.NationalityFull)
++	idw.putData("Datum rođenja:", idw.doc.DateOfBirth)
++	idw.putData("Osnov boravka:", idw.doc.PurposeOfStay)
+ 	addressLabel := "Prebivalište\ni adresa stana:"
+-	if ipw.doc.AddressLabel == "prebivalište" {
++	if idw.doc.AddressLabel == "prebivalište" {
+ 		addressLabel = "Prebivalište:"
+ 	}
+-	ipw.putData(addressLabel, localization.JoinWithComma(ipw.doc.State, ipw.doc.GetFullAddress(true)))
+-	ipw.putData("Datum promene adrese:", ipw.doc.AddressDate)
+-	ipw.putData("Evidencijski broj\nstranca:", ipw.doc.PersonalNumber)
+-	ipw.putData("Pol:", ipw.doc.Sex)
++	idw.putData(addressLabel, localization.JoinWithComma(idw.doc.State, idw.doc.GetFullAddress(true)))
++	idw.putData("Datum promene adrese:", idw.doc.AddressDate)
++	idw.putData("Evidencijski broj\nstranca:", idw.doc.PersonalNumber)
++	idw.putData("Pol:", idw.doc.Sex)
+ 
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.cell("Podaci o dokumentu")
+-	ipw.moveY(16)
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(9)
++	idw.cell("Podaci o dokumentu")
++	idw.moveY(16)
+ 
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.putData("Dokument izdaje:", ipw.doc.IssuingAuthority)
+-	ipw.putData("Broj dokumenta:", ipw.doc.DocRegNo)
+-	ipw.putData("Datum izdavanja:", ipw.doc.IssuingDate)
+-	ipw.putData("Važi do:", ipw.doc.ExpiryDate)
++	idw.line(0)
++	idw.moveY(9)
++	idw.putData("Dokument izdaje:", idw.doc.IssuingAuthority)
++	idw.putData("Broj dokumenta:", idw.doc.DocRegNo)
++	idw.putData("Datum izdavanja:", idw.doc.IssuingDate)
++	idw.putData("Važi do:", idw.doc.ExpiryDate)
+ 
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(3)
+-	ipw.line(0)
+-	ipw.moveY(9)
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(3)
++	idw.line(0)
++	idw.moveY(9)
+ 
+-	ipw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
++	idw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
+ 
+-	ipw.moveY(19)
++	idw.moveY(19)
+ 
+-	ipw.line(0.83)
++	idw.line(0.83)
+ 
+-	err = ipw.pdf.SetFontSize(9)
++	err = idw.pdf.SetFontSize(9)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.moveY(4)
++	idw.moveY(4)
+ 
+-	ipw.pdf.SetX(ipw.leftMargin)
++	idw.pdf.SetX(idw.leftMargin)
+ 
+-	ipw.cell("1. U čipu lične karte za strance, podaci o imenu i prezimenu stranca ispisani su onako kako su ispisani na samom")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("obrascu lične karte za stranca latiničnim pismom.")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("2. Ako se ime ili prezime stranca sastoji od dve ili više reči čija dužina prelazi 30 karaktera za ime, odnosno 36")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("karaktera za prezime, u čip se upisuje puno ime i prezime stranca, a na obrascu lične karte za stranca se upisuje do")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("30 karaktera za ime, odnosno 36 karaktera za prezime.")
++	idw.cell("1. U čipu lične karte za strance, podaci o imenu i prezimenu stranca ispisani su onako kako su ispisani na samom")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("obrascu lične karte za stranca latiničnim pismom.")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("2. Ako se ime ili prezime stranca sastoji od dve ili više reči čija dužina prelazi 30 karaktera za ime, odnosno 36")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("karaktera za prezime, u čip se upisuje puno ime i prezime stranca, a na obrascu lične karte za stranca se upisuje do")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("30 karaktera za ime, odnosno 36 karaktera za prezime.")
+ 
+-	ipw.moveY(9.7)
++	idw.moveY(9.7)
+ 
+-	ipw.line(0)
++	idw.line(0)
+ }
+ 
+-func (ipw *IdPdfWriter) printResidencePermit() {
+-	ipw.pdf.SetLineType("solid")
+-	ipw.pdf.SetY(59.041)
+-	ipw.line(0.83)
++func (idw *IDPdfWriter) printResidencePermit() {
++	idw.pdf.SetLineType("solid")
++	idw.pdf.SetY(59.041)
++	idw.line(0.83)
+ 
+-	ipw.pdf.SetXY(ipw.textLeftMargin+1.0, 64.95)
++	idw.pdf.SetXY(idw.textLeftMargin+1.0, 64.95)
+ 
+-	err := ipw.pdf.SetCharSpacing(-0.2)
++	err := idw.pdf.SetCharSpacing(-0.2)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-	ipw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
++	idw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
+ 
+-	err = ipw.pdf.SetCharSpacing(-0.1)
++	err = idw.pdf.SetCharSpacing(-0.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetY(79.8)
++	idw.pdf.SetY(79.8)
+ 
+-	ipw.line(0)
++	idw.line(0)
+ 
+ 	imageY := 86.0
+ 	imageHeight := 159.0
+ 
+-	err = ipw.pdf.ImageFrom(ipw.doc.Portrait, ipw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
++	err = idw.pdf.ImageFrom(idw.doc.Portrait, idw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetLineWidth(0.48)
+-	ipw.pdf.SetFillColor(255, 255, 255)
+-	err = ipw.pdf.Rectangle(ipw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
++	idw.pdf.SetLineWidth(0.48)
++	idw.pdf.SetFillColor(255, 255, 255)
++	err = idw.pdf.Rectangle(idw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.pdf.SetFillColor(0, 0, 0)
++	idw.pdf.SetFillColor(0, 0, 0)
+ 
+-	ipw.pdf.SetY(250)
++	idw.pdf.SetY(250)
+ 
+-	ipw.line(1.08)
+-	ipw.moveY(8)
+-	ipw.pdf.SetX(ipw.textLeftMargin)
+-	err = ipw.pdf.SetFontSize(11.1)
++	idw.line(1.08)
++	idw.moveY(8)
++	idw.pdf.SetX(idw.textLeftMargin)
++	err = idw.pdf.SetFontSize(11.1)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.cell("Podaci o strancu")
++	idw.cell("Podaci o strancu")
+ 
+-	ipw.moveY(16)
+-	ipw.line(0)
+-	ipw.moveY(9)
++	idw.moveY(16)
++	idw.line(0)
++	idw.moveY(9)
+ 
+-	ipw.putData("Prezime:", ipw.doc.Surname)
+-	ipw.putData("Ime:", ipw.doc.GivenName)
+-	ipw.putData("Državljanstvo:", ipw.doc.NationalityFull)
+-	ipw.putData("Datum rođenja:", ipw.doc.DateOfBirth)
+-	ipw.putData("Mesto rođenja,\nopština i država:", ipw.doc.GetFullPlaceOfBirth())
++	idw.putData("Prezime:", idw.doc.Surname)
++	idw.putData("Ime:", idw.doc.GivenName)
++	idw.putData("Državljanstvo:", idw.doc.NationalityFull)
++	idw.putData("Datum rođenja:", idw.doc.DateOfBirth)
++	idw.putData("Mesto rođenja,\nopština i država:", idw.doc.GetFullPlaceOfBirth())
+ 	addressLabel := "Prebivalište\ni adresa stana:"
+-	if ipw.doc.AddressLabel == "prebivalište" {
++	if idw.doc.AddressLabel == "prebivalište" {
+ 		addressLabel = "Prebivalište:"
+ 	}
+-	ipw.putData(addressLabel, ipw.doc.GetFullAddress(true))
+-	ipw.putData("Datum promene adrese:", ipw.doc.AddressDate)
+-	ipw.putData("Evidencijski broj\nstranca:", ipw.doc.PersonalNumber)
+-	ipw.putData("Pol:", ipw.doc.Sex)
+-	ipw.putData("Osnov boravka:", ipw.doc.PurposeOfStay)
+-	ipw.putData("Napomena:", ipw.doc.ENote)
+-
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.cell("Podaci o dokumentu")
+-	ipw.moveY(16)
+-
+-	ipw.line(0)
+-	ipw.moveY(9)
+-	ipw.putData("Naziv dokumenta:", ipw.doc.DocumentName)
+-	ipw.putData("Dokument izdaje:", ipw.doc.IssuingAuthority)
+-	ipw.putData("Broj dokumenta:", ipw.doc.DocRegNo)
+-	ipw.putData("Datum izdavanja:", ipw.doc.IssuingDate)
+-	ipw.putData("Važi do:", ipw.doc.ExpiryDate)
+-
+-	ipw.moveY(-8.67)
+-	ipw.line(0)
+-	ipw.moveY(3)
+-	ipw.line(0)
+-	ipw.moveY(9)
+-
+-	ipw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
+-
+-	ipw.moveY(19)
+-
+-	ipw.line(0.83)
+-
+-	err = ipw.pdf.SetFontSize(9)
++	idw.putData(addressLabel, idw.doc.GetFullAddress(true))
++	idw.putData("Datum promene adrese:", idw.doc.AddressDate)
++	idw.putData("Evidencijski broj\nstranca:", idw.doc.PersonalNumber)
++	idw.putData("Pol:", idw.doc.Sex)
++	idw.putData("Osnov boravka:", idw.doc.PurposeOfStay)
++	idw.putData("Napomena:", idw.doc.ENote)
++
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(9)
++	idw.cell("Podaci o dokumentu")
++	idw.moveY(16)
++
++	idw.line(0)
++	idw.moveY(9)
++	idw.putData("Naziv dokumenta:", idw.doc.DocumentName)
++	idw.putData("Dokument izdaje:", idw.doc.IssuingAuthority)
++	idw.putData("Broj dokumenta:", idw.doc.DocRegNo)
++	idw.putData("Datum izdavanja:", idw.doc.IssuingDate)
++	idw.putData("Važi do:", idw.doc.ExpiryDate)
++
++	idw.moveY(-8.67)
++	idw.line(0)
++	idw.moveY(3)
++	idw.line(0)
++	idw.moveY(9)
++
++	idw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
++
++	idw.moveY(19)
++
++	idw.line(0.83)
++
++	err = idw.pdf.SetFontSize(9)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+ 
+-	ipw.moveY(4)
++	idw.moveY(4)
+ 
+-	ipw.pdf.SetX(ipw.leftMargin)
++	idw.pdf.SetX(idw.leftMargin)
+ 
+-	ipw.cell("1. U čipu dozvole za privremeni boravak i rad, podaci o imenu i prezimenu imaoca dozvole ispisani su onako")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("kako su ispisani na samom obrascu dozvole za privremeni boravak latiničnim pismom.")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("2. Ako se ime ili prezime stranca sastoji od dve ili više reči čija dužina prelazi 30 karaktera za ime,")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("odnosno 36 karaktera za prezime u čip se upisuje puno ime stranca, a na obrascu dozvole za privremeni boravak")
+-	ipw.pdf.SetX(ipw.leftMargin)
+-	ipw.moveY(9.7)
+-	ipw.cell("se upisuje do 30 karaktera za ime, odnosno 36 karaktera za prezime.")
++	idw.cell("1. U čipu dozvole za privremeni boravak i rad, podaci o imenu i prezimenu imaoca dozvole ispisani su onako")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("kako su ispisani na samom obrascu dozvole za privremeni boravak latiničnim pismom.")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("2. Ako se ime ili prezime stranca sastoji od dve ili više reči čija dužina prelazi 30 karaktera za ime,")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("odnosno 36 karaktera za prezime u čip se upisuje puno ime stranca, a na obrascu dozvole za privremeni boravak")
++	idw.pdf.SetX(idw.leftMargin)
++	idw.moveY(9.7)
++	idw.cell("se upisuje do 30 karaktera za ime, odnosno 36 karaktera za prezime.")
+ 
+-	ipw.moveY(9.7)
++	idw.moveY(9.7)
+ 
+-	ipw.line(0)
++	idw.line(0)
+ }
+diff --git a/document/id_test.go b/document/id_test.go
+index cc4f5f0..ab69026 100644
+--- a/document/id_test.go
++++ b/document/id_test.go
+@@ -1,3 +1,4 @@
++// Package document_test contains tests for the document package.
+ package document_test
+ 
+ import (
+@@ -7,8 +8,8 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/document"
+ )
+ 
+-var documentId1 = document.IdDocument{}
+-var documentId2 = document.IdDocument{
++var documentID1 = document.IDDocument{}
++var documentID2 = document.IDDocument{
+ 	GivenName:       "Петар",
+ 	ParentGivenName: "Арсеније",
+ 	Surname:         "Петровић",
+@@ -19,7 +20,7 @@ var documentId2 = document.IdDocument{
+ 	PlaceOfBirth:    "Његуши",
+ 	StateOfBirth:    "Црна Гора",
+ }
+-var documentId3 = document.IdDocument{
++var documentID3 = document.IDDocument{
+ 	GivenName:        "Pablo Diego",
+ 	Surname:          "Ruiz Picasso",
+ 	HouseNumber:      "7",
+@@ -34,21 +35,22 @@ var documentId3 = document.IdDocument{
+ 	StateOfBirth:     "Reino de España",
+ }
+ 
++// Test_GetFullName_ID tests the GetFullName method of the IdDocument struct.
+ func Test_GetFullName_ID(t *testing.T) {
+ 	testCases := []struct {
+-		value    document.IdDocument
++		value    document.IDDocument
+ 		expected string
+ 	}{
+ 		{
+-			value:    documentId1,
++			value:    documentID1,
+ 			expected: "",
+ 		},
+ 		{
+-			value:    documentId2,
++			value:    documentID2,
+ 			expected: "Петар, Арсеније, Петровић",
+ 		},
+ 		{
+-			value:    documentId3,
++			value:    documentID3,
+ 			expected: "Pablo Diego, Ruiz Picasso",
+ 		},
+ 	}
+@@ -61,24 +63,25 @@ func Test_GetFullName_ID(t *testing.T) {
+ 	}
+ }
+ 
++// Test_GetFullAddress_ID tests the GetFullAddress method of the IdDocument struct.
+ func Test_GetFullAddress_ID(t *testing.T) {
+ 	testCases := []struct {
+-		value            document.IdDocument
++		value            document.IDDocument
+ 		expected         string
+ 		expectedReversed string
+ 	}{
+ 		{
+-			value:            documentId1,
++			value:            documentID1,
+ 			expected:         "",
+ 			expectedReversed: "",
+ 		},
+ 		{
+-			value:            documentId2,
++			value:            documentID2,
+ 			expected:         "Његошева 9Б, Подгорица",
+ 			expectedReversed: "Подгорица, Његошева 9Б",
+ 		},
+ 		{
+-			value:            documentId3,
++			value:            documentID3,
+ 			expected:         "Rue des Grands-Augustins 7A/6/21, Saint-Germain-des-Prés, Paris",
+ 			expectedReversed: "Paris, Saint-Germain-des-Prés, Rue des Grands-Augustins 7A/6/21",
+ 		},
+@@ -97,21 +100,22 @@ func Test_GetFullAddress_ID(t *testing.T) {
+ 	}
+ }
+ 
++// Test_GetFullPlaceOfBirth_ID tests the GetFullPlaceOfBirth method of the IdDocument struct.
+ func Test_GetFullPlaceOfBirth_ID(t *testing.T) {
+ 	testCases := []struct {
+-		value    document.IdDocument
++		value    document.IDDocument
+ 		expected string
+ 	}{
+ 		{
+-			value:    documentId1,
++			value:    documentID1,
+ 			expected: "",
+ 		},
+ 		{
+-			value:    documentId2,
++			value:    documentID2,
+ 			expected: "Његуши, Црна Гора",
+ 		},
+ 		{
+-			value:    documentId3,
++			value:    documentID3,
+ 			expected: "Málaga, Andalucía, Reino de España",
+ 		},
+ 	}
+@@ -124,32 +128,33 @@ func Test_GetFullPlaceOfBirth_ID(t *testing.T) {
+ 	}
+ }
+ 
+-func Test_BuildPdfID(t *testing.T) {
++// Test_BuildPDFID tests the BuildPdf method of the IdDocument struct.
++func Test_BuildPDFID(t *testing.T) {
+ 	unsetDocumentConfig()
+ 
+-	_, _, err := documentId1.BuildPdf()
++	_, _, err := documentID1.BuildPdf()
+ 	if err == nil {
+ 		t.Errorf("Expected error but got %v", err)
+ 	}
+ 
+ 	setDocumentConfigFromLocalFiles(t)
+ 
+-	_, _, err = documentId1.BuildPdf()
++	_, _, err = documentID1.BuildPdf()
+ 	if err == nil {
+ 		t.Errorf("Expected error but got %v", err)
+ 	}
+ 
+ 	rect := image.Rect(0, 0, 200, 200)
+ 	img := image.NewRGBA(rect)
+-	documentId1.Portrait = img
+-	documentId2.Portrait = img
++	documentID1.Portrait = img
++	documentID2.Portrait = img
+ 
+-	_, _, err = documentId1.BuildPdf()
++	_, _, err = documentID1.BuildPdf()
+ 	if err != nil {
+ 		t.Errorf("Unexpected error %v", err)
+ 	}
+ 
+-	_, _, err = documentId2.BuildPdf()
++	_, _, err = documentID2.BuildPdf()
+ 	if err != nil {
+ 		t.Errorf("Unexpected error %v", err)
+ 	}
+diff --git a/document/medical.go b/document/medical.go
+index 1b1aa08..8cc8d1a 100644
+--- a/document/medical.go
++++ b/document/medical.go
+@@ -17,22 +17,22 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
+-const rfzoServiceUrl = "https://www.rfzo.rs/proveraUplateDoprinosa2.php"
++const rfzoServiceURL = "https://www.rfzo.rs/proveraUplateDoprinosa2.php"
+ 
+-// Card number doesn't have exactly 11 digits.
++// ErrInvalidCardNo is returned when the card number doesn't have exactly 11 digits.
+ var ErrInvalidCardNo = errors.New("invalid card number length")
+ 
+-// Insurance number doesn't have exactly 11 digits.
++// ErrInvalidInsuranceNo is returned when the insurance number doesn't have exactly 11 digits.
+ var ErrInvalidInsuranceNo = errors.New("invalid insurance number length")
+ 
+-// Date `ValidUntil` could not be extracted from RFZO response.
++// ErrNoSubmatchFound is returned when the date ValidUntil could not be extracted from RFZO response.
+ var ErrNoSubmatchFound = errors.New("no submatch found")
+ 
+-// Represents a document stored on a Serbian public medical insurance card.
++// MedicalDocument represents a document stored on a Serbian public medical insurance card.
+ type MedicalDocument struct {
+ 	InsurerName            string
+ 	InsurerID              string
+-	CardId                 string
++	CardID                 string
+ 	DateOfIssue            string
+ 	DateOfExpiry           string
+ 	ChipSerialNumber       string
+@@ -59,7 +59,7 @@ type MedicalDocument struct {
+ 	CarrierFamilyNameLatin string
+ 	CarrierGivenName       string
+ 	CarrierFamilyName      string
+-	CarrierIdNumber        string
++	CarrierIDNumber        string
+ 	CarrierInsurantNumber  string
+ 	CarrierFamilyMember    bool
+ 	CarrierRelationship    string
+@@ -69,14 +69,16 @@ type MedicalDocument struct {
+ 	TaxpayerName           string
+ 	TaxpayerResidence      string
+ 	TaxpayerNumber         string
+-	TaxpayerIdNumber       string
++	TaxpayerIDNumber       string
+ 	TaxpayerActivityCode   string
+ }
+ 
++// GetFullName returns the full name of the medical document holder.
+ func (doc *MedicalDocument) GetFullName() string {
+ 	return localization.JoinWithComma(doc.GivenNameLatin, doc.ParentNameLatin, doc.FamilyNameLatin)
+ }
+ 
++// GetFullStreetAddress returns the full street address.
+ func (doc *MedicalDocument) GetFullStreetAddress() string {
+ 	var address strings.Builder
+ 
+@@ -94,10 +96,12 @@ func (doc *MedicalDocument) GetFullStreetAddress() string {
+ 	return address.String()
+ }
+ 
++// GetFullPlaceAddress returns the full place address.
+ func (doc *MedicalDocument) GetFullPlaceAddress() string {
+ 	return localization.JoinWithComma(doc.Place, doc.Municipality, doc.Country)
+ }
+ 
++// BuildPdf creates a PDF representation of the MedicalDocument.
+ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	defer func() {
+ 		if r := recover(); r != nil {
+@@ -221,7 +225,7 @@ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 
+ 	putData("ЛБО:", doc.CarrierInsurantNumber)
+ 
+-	putData("ЈМБГ:", doc.CarrierIdNumber)
++	putData("ЈМБГ:", doc.CarrierIDNumber)
+ 
+ 	putData("Члан породице:", localization.FormatYesNo(doc.CarrierFamilyMember, localization.SrCyrillic))
+ 
+@@ -243,7 +247,7 @@ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 
+ 	putData("Регистарски број:", doc.TaxpayerNumber)
+ 
+-	putData("ПИБ/ЈМБГ:", doc.TaxpayerIdNumber)
++	putData("ПИБ/ЈМБГ:", doc.TaxpayerIDNumber)
+ 
+ 	putData("Делатност:", doc.TaxpayerActivityCode)
+ 
+@@ -259,10 +263,12 @@ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	return pdf.GetBytesPdf(), fileName, nil
+ }
+ 
++// BuildJson creates a JSON representation of the MedicalDocument.
+ func (doc *MedicalDocument) BuildJson() ([]byte, error) {
+ 	return json.Marshal(doc)
+ }
+ 
++// BuildExcel creates an Excel representation of the MedicalDocument.
+ func (doc *MedicalDocument) BuildExcel() ([]byte, string, error) {
+ 	xlsx, err := CreateExcel(*doc)
+ 	name := doc.formatFilename() + ".xlsx"
+@@ -273,8 +279,9 @@ func (doc *MedicalDocument) formatFilename() string {
+ 	return strings.ToLower(doc.GivenNameLatin + "_" + doc.FamilyNameLatin)
+ }
+ 
++// UpdateValidUntilDateFromRfzo fetches and updates the ValidUntil date from the RFZO web service.
+ func (doc *MedicalDocument) UpdateValidUntilDateFromRfzo() error {
+-	if len([]rune(doc.CardId)) != 11 {
++	if len([]rune(doc.CardID)) != 11 {
+ 		return ErrInvalidCardNo
+ 	}
+ 
+@@ -282,7 +289,7 @@ func (doc *MedicalDocument) UpdateValidUntilDateFromRfzo() error {
+ 		return ErrInvalidInsuranceNo
+ 	}
+ 
+-	resp, err := http.PostForm(rfzoServiceUrl, url.Values{"zk": {doc.CardId}, "lbo": {doc.InsurantNumber}})
++	resp, err := http.PostForm(rfzoServiceURL, url.Values{"zk": {doc.CardID}, "lbo": {doc.InsurantNumber}})
+ 	if err != nil {
+ 		return fmt.Errorf("posting: %w", err)
+ 	}
+@@ -304,6 +311,7 @@ func (doc *MedicalDocument) UpdateValidUntilDateFromRfzo() error {
+ 	return nil
+ }
+ 
++// ParseValidUntilDateFromRfzoResponse extracts the ValidUntil date from RFZO service response.
+ func ParseValidUntilDateFromRfzoResponse(response string) (string, error) {
+ 	regex, err := regexp.Compile(`оверена до: <strong>(\d+\.\d+\.\d+\.)</strong>`)
+ 	if err != nil {
+diff --git a/document/medical_test.go b/document/medical_test.go
+index 5026822..406ed10 100644
+--- a/document/medical_test.go
++++ b/document/medical_test.go
+@@ -24,7 +24,7 @@ var documentMedical2 = document.MedicalDocument{
+ 	CarrierFamilyName:      "Петровић",
+ 	InsurantNumber:         "12345678",
+ 	InsuranceStartDate:     "29.03.2014",
+-	CardId:                 "12345678901",
++	CardID:                 "12345678901",
+ }
+ var documentMedical3 = document.MedicalDocument{
+ 	GivenNameLatin:  "Pablo Diego",
+@@ -138,7 +138,6 @@ func Test_GetExpiryDateFromRfzo(t *testing.T) {
+ 	if err != document.ErrInvalidInsuranceNo {
+ 		t.Errorf("Expected the InvalidInsuranceNo error but got %v", err)
+ 	}
+-
+ }
+ 
+ func Test_parseDateFromRfzoResponse(t *testing.T) {
+diff --git a/document/vehicle.go b/document/vehicle.go
+index 4135873..80a4ba8 100644
+--- a/document/vehicle.go
++++ b/document/vehicle.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/signintech/gopdf"
+ )
+ 
+-// Represents a document stored on a Serbian vehicle card.
++// VehicleDocument represents a document stored on a Serbian vehicle card.
+ // Fields are named according to official API.
+ type VehicleDocument struct {
+ 	AuthorityIssuing            string
+@@ -19,7 +19,7 @@ type VehicleDocument struct {
+ 	CompetentAuthority          string
+ 	DateOfFirstRegistration     string
+ 	EngineCapacity              string
+-	EngineIdNumber              string
++	EngineIDNumber              string
+ 	EngineRatedSpeed            string
+ 	ExpiryDate                  string
+ 	HomologationMark            string
+@@ -45,7 +45,7 @@ type VehicleDocument struct {
+ 	UsersPersonalNo             string
+ 	UsersSurnameOrBusinessName  string
+ 	VehicleCategory             string
+-	VehicleIdNumber             string
++	VehicleIDNumber             string
+ 	VehicleLoad                 string
+ 	VehicleMake                 string
+ 	VehicleMass                 string
+@@ -53,6 +53,7 @@ type VehicleDocument struct {
+ 	YearOfProduction            string
+ }
+ 
++// BuildPdf creates a PDF representation of the VehicleDocument.
+ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	defer func() {
+ 		if r := recover(); r != nil {
+@@ -97,9 +98,8 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	dashFormat := func(str string) string {
+ 		if len(str) == 0 {
+ 			return "-"
+-		} else {
+-			return str
+ 		}
++		return str
+ 	}
+ 
+ 	cell := func(s string) {
+@@ -129,7 +129,6 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	}
+ 
+ 	putParagraph := func(data string) {
+-
+ 		texts := strings.Split(data, ",")
+ 		if len(texts) == 2 {
+ 			cell(texts[0] + ",")
+@@ -247,12 +246,12 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	putData("Broj osovina", doc.NumberOfAxles)
+ 	newLine()
+ 
+-	putData("Broj šasije", doc.VehicleIdNumber)
++	putData("Broj šasije", doc.VehicleIDNumber)
+ 	tab()
+ 	putData("Zapremina motora", doc.EngineCapacity)
+ 	newLine()
+ 
+-	putData("Broj motora", doc.EngineIdNumber)
++	putData("Broj motora", doc.EngineIDNumber)
+ 	tab()
+ 	putData("Masa", doc.VehicleMass)
+ 	newLine()
+@@ -292,10 +291,14 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	return pdf.GetBytesPdf(), fileName, nil
+ }
+ 
++// BuildJson creates a JSON representation of the VehicleDocument.
++// BuildJson creates a JSON representation of the VehicleDocument.
+ func (doc *VehicleDocument) BuildJson() ([]byte, error) {
+ 	return json.Marshal(doc)
+ }
+ 
++// BuildExcel creates an Excel representation of the VehicleDocument.
++// BuildExcel creates an Excel representation of the VehicleDocument.
+ func (doc *VehicleDocument) BuildExcel() ([]byte, string, error) {
+ 	xlsx, err := CreateExcel(*doc)
+ 	fileName := doc.formatFilename() + ".xlsx"
+diff --git a/internal/flags.go b/internal/flags.go
+index 3d75436..01887a1 100644
+--- a/internal/flags.go
++++ b/internal/flags.go
+@@ -1,3 +1,4 @@
++// Package internal contains internal implementation details for the bas-celik application.
+ package internal
+ 
+ import (
+@@ -11,6 +12,7 @@ import (
+ 
+ var version string
+ 
++// ProcessFlags processes command-line flags and returns launch configuration.
+ func ProcessFlags() (LaunchConfig, bool) {
+ 	launchCfg := LaunchConfig{}
+ 
+@@ -46,7 +48,7 @@ func ProcessFlags() (LaunchConfig, bool) {
+ 		return launchCfg, true
+ 	}
+ 
+-	launchCfg.JsonPath = *jsonPath
++	launchCfg.JSONPath = *jsonPath
+ 	launchCfg.PdfPath = *pdfPath
+ 	launchCfg.ExcelPath = *excelPath
+ 	launchCfg.Verbose = *verboseFlag
+@@ -130,6 +132,7 @@ func printVersion() {
+ 	fmt.Println("https://github.com/ubavic/bas-celik")
+ }
+ 
++// SetVersion sets the application version string.
+ func SetVersion(v string) {
+ 	version = v
+ }
+diff --git a/internal/gui/cardReaderUI.go b/internal/gui/cardReaderUI.go
+index 7450cc4..5b9860e 100644
+--- a/internal/gui/cardReaderUI.go
++++ b/internal/gui/cardReaderUI.go
+@@ -23,14 +23,14 @@ func startCardReaderUI() {
+ 
+ 	poller, pollerErr := reader.NewPoller(state.toolbar, connectToCard)
+ 
+-	rows := container.New(layout.NewVBoxLayout(), state.toolbar, spacer, state.startPage, state.documentUiMainContainer, state.cryptoUiContainer)
++	rows := container.New(layout.NewVBoxLayout(), state.toolbar, spacer, state.startPage, state.documentUIMainContainer, state.cryptoUIContainer)
+ 	columns := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), rows, layout.NewSpacer())
+ 
+-	state.documentUi = columns
++	state.documentUI = columns
+ 
+-	state.mainContainer.Add(state.documentUi)
++	state.mainContainer.Add(state.documentUI)
+ 
+-	state.cryptoUiContainer.Hide()
++	state.cryptoUIContainer.Hide()
+ 
+ 	if pollerErr == nil {
+ 		poller.StartPoller()
+@@ -49,7 +49,7 @@ func setUI(doc document.Document) {
+ 	buttonBarObjects := []fyne.CanvasObject{state.statusBar, layout.NewSpacer()}
+ 
+ 	switch doc := doc.(type) {
+-	case *document.IdDocument:
++	case *document.IDDocument:
+ 		page = pageID(doc)
+ 	case *document.MedicalDocument:
+ 		updateButton := widget.NewButton(t("ui.update"), updateMedicalDocHandler(doc))
+@@ -65,58 +65,52 @@ func setUI(doc document.Document) {
+ 
+ 	buttonBar := container.New(layout.NewHBoxLayout(), buttonBarObjects...)
+ 
+-	state.documentUiMainContainer.RemoveAll()
+-	state.documentUiMainContainer.Add(page)
+-	state.documentUiMainContainer.Add(buttonBar)
++	state.documentUIMainContainer.RemoveAll()
++	state.documentUIMainContainer.Add(page)
++	state.documentUIMainContainer.Add(buttonBar)
+ 
+ 	state.startPage.Hide()
+-	state.documentUiMainContainer.Show()
++	state.documentUIMainContainer.Show()
+ 
+ 	resizeWindow(false)
+ }
+ 
+-func setStartPage(statusId, explanationId string, err error) {
++func setStartPage(statusID, explanationID string, err error) {
+ 	state.mu.Lock()
+ 	defer state.mu.Unlock()
+ 
+-	status := t(statusId)
+-	explanation := t(explanationId)
++	status := t(statusID)
++	explanation := t(explanationID)
+ 
+-	isError := false
+-	if err != nil {
+-		isError = true
+-	}
++	isError := err != nil
+ 
+ 	if isError {
+ 		logger.Error(err)
+ 	} else {
+-		logger.Info(translation.EnglishTranslation(statusId) + " " + translation.EnglishTranslation(explanationId))
++		logger.Info(translation.EnglishTranslation(statusID) + " " + translation.EnglishTranslation(explanationID))
+ 	}
+ 
+ 	state.startPage.SetStatus(status, explanation, isError)
+ 	state.startPage.Refresh()
+ 
+-	state.documentUiMainContainer.RemoveAll()
++	state.documentUIMainContainer.RemoveAll()
+ 
+-	state.documentUiMainContainer.Hide()
++	state.documentUIMainContainer.Hide()
+ 	state.startPage.Show()
+ 
+ 	resizeWindow(true)
+ }
+ 
+-func setStatus(statusId string, err error) {
+-	isError := false
+-	if err != nil {
+-		isError = true
+-	}
++func setStatus(statusID string, err error) {
++	isError := err != nil
+ 
+ 	if isError {
+ 		logger.Error(err)
+ 	} else {
+-		logger.Info(translation.EnglishTranslation(statusId))
++		logger.Info(translation.EnglishTranslation(statusID))
+ 	}
+ 
+-	status := t(statusId)
++	status := t(statusID)
+ 	state.statusBar.SetStatus(status, isError)
+ 	state.statusBar.Refresh()
+ }
+@@ -167,11 +161,11 @@ func setTimedStatus(label string) {
+ 
+ func showDocumentUI() {
+ 	state.mainContainer.RemoveAll()
+-	state.mainContainer.Add(state.documentUi)
++	state.mainContainer.Add(state.documentUI)
+ }
+ 
+ func resizeWindow(keepCurrentSize bool) {
+-	minSize := state.documentUi.MinSize()
++	minSize := state.documentUI.MinSize()
+ 
+ 	if keepCurrentSize {
+ 		currentSize := state.mainContainer.Size()
+diff --git a/internal/gui/celiktheme/theme.go b/internal/gui/celiktheme/theme.go
+index 27bb23f..d7fad96 100644
+--- a/internal/gui/celiktheme/theme.go
++++ b/internal/gui/celiktheme/theme.go
+@@ -1,3 +1,4 @@
++// Package celiktheme provides a custom Fyne theme with light and dark modes.
+ package celiktheme
+ 
+ import (
+@@ -7,11 +8,13 @@ import (
+ 	"fyne.io/fyne/v2/theme"
+ )
+ 
++// Theme implements a custom Fyne theme with light and dark modes.
+ type Theme struct {
+ 	systemDecides bool
+ 	dark          bool
+ }
+ 
++// NewTheme creates a new Theme instance based on the user's selection.
+ func NewTheme(themeSelection int) Theme {
+ 	theme := Theme{}
+ 
+@@ -24,32 +27,35 @@ func NewTheme(themeSelection int) Theme {
+ 	return theme
+ }
+ 
++// Color returns the color for the given color name and variant.
+ func (t Theme) Color(colorName fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+ 	if t.systemDecides {
+ 		if v == theme.VariantLight || v == 2 {
+ 			return lightTheme(colorName)
+-		} else {
+-			return darkTheme(colorName)
+ 		}
++		return darkTheme(colorName)
+ 	} else if t.dark {
+ 		return darkTheme(colorName)
+-	} else {
+-		return lightTheme(colorName)
+ 	}
++	return lightTheme(colorName)
+ }
+ 
++// Font returns the font resource for the given text style.
+ func (Theme) Font(s fyne.TextStyle) fyne.Resource {
+ 	return theme.DefaultTheme().Font(s)
+ }
+ 
++// Icon returns the icon resource for the given icon name.
+ func (Theme) Icon(n fyne.ThemeIconName) fyne.Resource {
+ 	return theme.DefaultTheme().Icon(n)
+ }
+ 
++// Size returns the size for the given size name.
+ func (Theme) Size(s fyne.ThemeSizeName) float32 {
+ 	return theme.DefaultTheme().Size(s)
+ }
+ 
++// CornerRadius returns the corner radius for UI elements.
+ func (Theme) CornerRadius() float32 {
+ 	return 3
+ }
+diff --git a/internal/gui/crypto.go b/internal/gui/crypto.go
+index 953902e..4512fb5 100644
+--- a/internal/gui/crypto.go
++++ b/internal/gui/crypto.go
+@@ -20,7 +20,7 @@ import (
+ )
+ 
+ func cryptoList() {
+-	if state.cryptoUiContainer.Visible() {
++	if state.cryptoUIContainer.Visible() {
+ 		return
+ 	}
+ 
+@@ -28,11 +28,11 @@ func cryptoList() {
+ 
+ 	createCryptoUI()
+ 
+-	if state.cryptoUi != nil {
++	if state.cryptoUI != nil {
+ 		state.startPage.Hide()
+-		state.documentUiMainContainer.Hide()
+-		state.cryptoUiContainer.Add(state.cryptoUi)
+-		state.cryptoUiContainer.Show()
++		state.documentUIMainContainer.Hide()
++		state.cryptoUIContainer.Add(state.cryptoUI)
++		state.cryptoUIContainer.Show()
+ 	}
+ 
+ 	state.mu.Unlock()
+@@ -44,7 +44,7 @@ func createCryptoUI() {
+ 
+ 	gemaltoCard, ok := state.cardDocument.(*card.Gemalto)
+ 	if !ok {
+-		state.cryptoUi = nil
++		state.cryptoUI = nil
+ 		setStatus("crypto.wrongCard", fmt.Errorf("card could not be casted to Gemalto card"))
+ 		return
+ 	}
+@@ -88,7 +88,7 @@ func createCryptoUI() {
+ 	}
+ 
+ 	buttons := []fyne.CanvasObject{}
+-	exitButton := widget.NewButtonWithIcon(t("crypto.return"), theme.NavigateBackIcon(), closeCryptoUi)
++	exitButton := widget.NewButtonWithIcon(t("crypto.return"), theme.NavigateBackIcon(), closeCryptoUI)
+ 	changePinButton := widget.NewButton(t("crypto.changePin"), pinChange())
+ 	buttons = append(buttons, exitButton, layout.NewSpacer(), changePinButton)
+ 
+@@ -101,7 +101,7 @@ func createCryptoUI() {
+ 
+ 	canvasObjects = append(canvasObjects, layout.NewSpacer(), buttonBar)
+ 
+-	state.cryptoUi = container.New(layout.NewVBoxLayout(), canvasObjects...)
++	state.cryptoUI = container.New(layout.NewVBoxLayout(), canvasObjects...)
+ }
+ 
+ func renderCertSelector(selectCert func(int)) fyne.CanvasObject {
+@@ -258,11 +258,11 @@ func saveCert() {
+ 	dialog.Show()
+ }
+ 
+-func closeCryptoUi() {
++func closeCryptoUI() {
+ 	state.mu.Lock()
+-	state.cryptoUiContainer.Hide()
+-	state.documentUiMainContainer.Show()
+-	state.cryptoUiContainer.RemoveAll()
++	state.cryptoUIContainer.Hide()
++	state.documentUIMainContainer.Show()
++	state.cryptoUIContainer.RemoveAll()
+ 	state.mu.Unlock()
+ }
+ 
+diff --git a/internal/gui/document.go b/internal/gui/document.go
+index fd60075..91f63bf 100644
+--- a/internal/gui/document.go
++++ b/internal/gui/document.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/localization"
+ )
+ 
+-func pageID(doc *document.IdDocument) *fyne.Container {
++func pageID(doc *document.IDDocument) *fyne.Container {
+ 	var personalInformationGroupObjects, docGroupObjects []fyne.CanvasObject
+ 
+ 	widthThird := (350 - 2*theme.Padding()) / 3
+@@ -34,11 +34,12 @@ func pageID(doc *document.IdDocument) *fyne.Container {
+ 	purposeOfStayLabel := t("id.purposeOfStay")
+ 	eNoteLabel := t("id.eNote")
+ 
+-	if doc.DocumentType == document.ID_TYPE_IDENTITY_FOREIGNER {
++	switch doc.DocumentType {
++	case document.ID_TYPE_IDENTITY_FOREIGNER:
+ 		personalInformationGroupObjects = append(personalInformationGroupObjects,
+ 			widgets.NewField(nationalityLabel, doc.NationalityFull, 200),
+ 			widgets.NewField(foreignerStatusLabel, doc.StatusOfForeigner, 200))
+-	} else if doc.DocumentType == document.ID_TYPE_RESIDENCE_PERMIT {
++	case document.ID_TYPE_RESIDENCE_PERMIT:
+ 		personalInformationGroupObjects = append(personalInformationGroupObjects,
+ 			widgets.NewField(nationalityLabel, doc.NationalityFull, 200),
+ 			widgets.NewField(purposeOfStayLabel, doc.PurposeOfStay, 200),
+@@ -113,14 +114,14 @@ func pageMedical(doc *document.MedicalDocument) *fyne.Container {
+ 
+ 	carrierNameF := widgets.NewField(t("medical.carrier"), doc.CarrierGivenNameLatin+" "+doc.CarrierFamilyNameLatin, 350)
+ 	carrierInsurantNumberF := widgets.NewField(t("medical.insuranceNumber"), doc.CarrierInsurantNumber, 170)
+-	carrierIdNumberF := widgets.NewField(t("medical.personalNumber"), doc.CarrierIdNumber, 170)
+-	carrierRow1 := container.New(layout.NewHBoxLayout(), carrierInsurantNumberF, carrierIdNumberF)
++	carrierIDNumberF := widgets.NewField(t("medical.personalNumber"), doc.CarrierIDNumber, 170)
++	carrierRow1 := container.New(layout.NewHBoxLayout(), carrierInsurantNumberF, carrierIDNumberF)
+ 
+ 	carrierFamilyMemberF := widgets.NewField(t("medical.familyMember"), localization.FormatYesNo(doc.CarrierFamilyMember, translation.CurrentLanguage()), 170)
+ 	carrierRelationshipF := widgets.NewField(t("medical.relationship"), doc.CarrierRelationship, 170)
+ 	carrierRow2 := container.New(layout.NewHBoxLayout(), carrierFamilyMemberF, carrierRelationshipF)
+ 	carrierGroup := widgets.NewGroup(t("medical.insuranceCarrierInformation"), carrierNameF, carrierRow1, carrierRow2)
+-	cardNumber := widgets.NewField(t("medical.cardId"), doc.CardId, 270)
++	cardNumber := widgets.NewField(t("medical.cardId"), doc.CardID, 270)
+ 	dateOfIssueF := widgets.NewField(t("medical.dateOfIssue"), doc.DateOfIssue, 170)
+ 	dateOfExpiryF := widgets.NewField(t("medical.dateOfExpiry"), doc.DateOfExpiry, 170)
+ 	cardRow1 := container.New(layout.NewHBoxLayout(), dateOfIssueF, dateOfExpiryF)
+@@ -136,8 +137,8 @@ func pageMedical(doc *document.MedicalDocument) *fyne.Container {
+ 	taxpayerPlaceF := widgets.NewField(t("medical.taxpayerResidence"), doc.TaxpayerResidence, 170)
+ 	taxpayerRow1 := container.New(layout.NewHBoxLayout(), taxpayerActivityCodeF, taxpayerPlaceF)
+ 	taxpayerNumberF := widgets.NewField(t("medical.taxpayerNumber"), doc.TaxpayerNumber, 170)
+-	taxpayerIdNumberF := widgets.NewField(t("medical.taxpayerIdNumber"), doc.TaxpayerIdNumber, 170)
+-	taxpayerRow2 := container.New(layout.NewHBoxLayout(), taxpayerNumberF, taxpayerIdNumberF)
++	taxpayerIDNumberF := widgets.NewField(t("medical.taxpayerIdNumber"), doc.TaxpayerIDNumber, 170)
++	taxpayerRow2 := container.New(layout.NewHBoxLayout(), taxpayerNumberF, taxpayerIDNumberF)
+ 
+ 	taxpayerGroup := widgets.NewGroup(t("medical.taxpayerInformation"), taxpayerNameF, taxpayerRow1, taxpayerRow2)
+ 
+@@ -157,9 +158,9 @@ func pageVehicle(doc *document.VehicleDocument) *fyne.Container {
+ 	expiryDateF := widgets.NewField(t("vehicle.expiryDate"), doc.ExpiryDate, 220)
+ 	dateRow := container.New(layout.NewHBoxLayout(), issuingDateF, expiryDateF)
+ 	competentAuthorityF := widgets.NewField(t("vehicle.competentAuthority"), doc.CompetentAuthority, 350)
+-	docIdF := widgets.NewField(t("vehicle.unambiguousNumber"), doc.UnambiguousNumber, 220)
++	docIDF := widgets.NewField(t("vehicle.unambiguousNumber"), doc.UnambiguousNumber, 220)
+ 	serialNumberF := widgets.NewField(t("vehicle.serialNumber"), doc.SerialNumber, 220)
+-	idRow := container.New(layout.NewHBoxLayout(), docIdF, serialNumberF)
++	idRow := container.New(layout.NewHBoxLayout(), docIDF, serialNumberF)
+ 	documentGroup := widgets.NewGroup(t("vehicle.documentInformation"), issueRow, dateRow, competentAuthorityF, idRow)
+ 
+ 	ownerNoLbl := ""
+@@ -216,7 +217,7 @@ func pageVehicle(doc *document.VehicleDocument) *fyne.Container {
+ 	powerMassRatioF := widgets.NewField(t("vehicle.powerWeightRatio"), doc.PowerWeightRatio, 220)
+ 	vehicleRow4 := container.New(layout.NewHBoxLayout(), enginePowerF, powerMassRatioF)
+ 
+-	engineNumberF := widgets.NewField(t("vehicle.engineIdNumber"), doc.EngineIdNumber, 220)
++	engineNumberF := widgets.NewField(t("vehicle.engineIdNumber"), doc.EngineIDNumber, 220)
+ 	engineCapacityF := widgets.NewField(t("vehicle.engineCapacity"), doc.EngineCapacity, 220)
+ 	vehicleRow5 := container.New(layout.NewHBoxLayout(), engineNumberF, engineCapacityF)
+ 
+diff --git a/internal/gui/icon/icon.go b/internal/gui/icon/icon.go
+index e1fd92b..2f35aa0 100644
+--- a/internal/gui/icon/icon.go
++++ b/internal/gui/icon/icon.go
+@@ -1,3 +1,4 @@
++// Package icon provides icon loading and management for the GUI.
+ package icon
+ 
+ import (
+@@ -8,9 +9,13 @@ import (
+ 	"fyne.io/fyne/v2/theme"
+ )
+ 
++// CertificateThemedResource is the themed certificate icon resource.
+ var CertificateThemedResource *theme.ThemedResource
++
++// PinThemedResource is the themed PIN icon resource.
+ var PinThemedResource *theme.ThemedResource
+ 
++// LoadIcons loads icon resources from the embedded filesystem.
+ func LoadIcons(embedFS embed.FS) error {
+ 	certificateSvg, err := embedFS.ReadFile("embed/icons/certificate.svg")
+ 	if err != nil {
+diff --git a/internal/gui/pinChange.go b/internal/gui/pinChange.go
+index 2764e9c..52539d2 100644
+--- a/internal/gui/pinChange.go
++++ b/internal/gui/pinChange.go
+@@ -89,11 +89,12 @@ func pinForm() {
+ 				dialog.ShowInformation(t("pinChange.title"), message, state.window)
+ 				logger.Error(err)
+ 				return
+-			} else {
+-				pinDialog.Hide()
+-				dialog.ShowInformation(t("pinChange.title"), t("pinChange.success"), state.window)
+-				logger.Info("pin changed")
+ 			}
++
++			pinDialog.Hide()
++			dialog.ShowInformation(t("pinChange.title"), t("pinChange.success"), state.window)
++			logger.Info("pin changed")
++
+ 			reader.RestartReaderPoler()
+ 		},
+ 		CancelText: t("pinChange.cancel"),
+diff --git a/internal/gui/poller.go b/internal/gui/poller.go
+index 383231e..49221ce 100644
+--- a/internal/gui/poller.go
++++ b/internal/gui/poller.go
+@@ -12,13 +12,13 @@ import (
+ func connectToCard(selectedReader string, ctx *scard.Context) {
+ 	state.mu.Lock()
+ 	state.cardDocument = nil
+-	state.cryptoUi = nil
++	state.cryptoUI = nil
+ 	state.certs = nil
+ 	state.selectedCert = -1
+ 	state.mu.Unlock()
+ 
+-	state.cryptoUiContainer.Hide()
+-	state.cryptoUiContainer.RemoveAll()
++	state.cryptoUIContainer.Hide()
++	state.cryptoUIContainer.RemoveAll()
+ 
+ 	readers, _ := ctx.ListReaders()
+ 	if selectedReader == "" || len(readers) == 0 {
+@@ -33,7 +33,7 @@ func connectToCard(selectedReader string, ctx *scard.Context) {
+ 		err = sCard.BeginTransaction()
+ 		if err == nil {
+ 			tryToProcessCard(sCard)
+-			sCard.EndTransaction(scard.LeaveCard)
++			_ = sCard.EndTransaction(scard.LeaveCard)
+ 			return
+ 		}
+ 	}
+diff --git a/internal/gui/preferences.go b/internal/gui/preferences.go
+index 5807870..ad5f8c1 100644
+--- a/internal/gui/preferences.go
++++ b/internal/gui/preferences.go
+@@ -31,13 +31,13 @@ func showSetupBox() func() {
+ 		colorTheme := preferences.IntWithFallback(themePreferenceKey, 0)
+ 		themeSelect := widget.NewSelect(
+ 			[]string{t("preference.theme.osDetermines"), t("preference.theme.alwaysLight"), t("preference.theme.alwaysDark")},
+-			func(s string) {})
++			func(_ string) {})
+ 		themeSelect.SetSelectedIndex(colorTheme)
+ 
+ 		language := preferences.IntWithFallback(languagePreferenceKey, 0)
+ 		languageSelect := widget.NewSelect(
+ 			[]string{"Srpski", "Српски", "English"},
+-			func(s string) {},
++			func(_ string) {},
+ 		)
+ 		languageSelect.SetSelectedIndex(language)
+ 
+diff --git a/internal/gui/reader/linux.go b/internal/gui/reader/linux.go
+index 0c5817d..a022b6b 100644
+--- a/internal/gui/reader/linux.go
++++ b/internal/gui/reader/linux.go
+@@ -13,5 +13,5 @@ func (rp *ReaderPoller) waitForReaderChange(_ int) {
+ 	}
+ 
+ 	states := []scard.ReaderState{state}
+-	rp.readerListerContext.GetStatusChange(states, -1)
++	_ = rp.readerListerContext.GetStatusChange(states, -1)
+ }
+diff --git a/internal/gui/reader/poller.go b/internal/gui/reader/poller.go
+index 192ac62..594d035 100644
+--- a/internal/gui/reader/poller.go
++++ b/internal/gui/reader/poller.go
+@@ -1,3 +1,4 @@
++// Package reader provides card reader polling functionality.
+ package reader
+ 
+ import (
+@@ -13,6 +14,7 @@ import (
+ var created = false
+ var createdPoller *ReaderPoller
+ 
++// ReaderPoller manages card reader polling and state changes.
+ type ReaderPoller struct {
+ 	readerListerContext *scard.Context
+ 	singleReaderContext *scard.Context
+@@ -23,11 +25,13 @@ type ReaderPoller struct {
+ 	onCardEvent         func(string, *scard.Context)
+ }
+ 
++// ReaderLister defines the interface for updating reader lists in the UI.
+ type ReaderLister interface {
+ 	SetReaders([]string, string)
+ 	HookReaderChange(func(string))
+ }
+ 
++// NewPoller creates a new ReaderPoller instance. Only one instance can be created.
+ func NewPoller(readerLister ReaderLister, onCardEvent func(string, *scard.Context)) (*ReaderPoller, error) {
+ 	if created {
+ 		panic("you can create only single instance of ReaderPoller")
+@@ -58,6 +62,7 @@ func NewPoller(readerLister ReaderLister, onCardEvent func(string, *scard.Contex
+ 	return createdPoller, nil
+ }
+ 
++// StartPoller begins polling for reader and card state changes.
+ func (rp *ReaderPoller) StartPoller() {
+ 	rp.onCardEvent("", rp.singleReaderContext)
+ 	go rp.pollReaders()
+@@ -103,6 +108,7 @@ func (rp *ReaderPoller) pollReaders() {
+ 	}
+ }
+ 
++// SetReader changes the currently selected reader and restarts polling for that reader.
+ func (rp *ReaderPoller) SetReader(newReader string) {
+ 	if rp.currentReader == newReader {
+ 		return
+@@ -129,7 +135,10 @@ func (rp *ReaderPoller) readerPoller(selectedReader string) {
+ 
+ 		states := []scard.ReaderState{state}
+ 
+-		rp.singleReaderContext.GetStatusChange(states, 0)
++		err := rp.singleReaderContext.GetStatusChange(states, 0)
++		if err != nil {
++			return
++		}
+ 		for i := range states {
+ 			states[i].CurrentState = states[i].EventState
+ 		}
+@@ -137,7 +146,7 @@ func (rp *ReaderPoller) readerPoller(selectedReader string) {
+ 		logger.Debug("Reader poller event 1: " + card.FormatState(states[0].CurrentState))
+ 
+ 		rp.readerPollerStarted.Store(true)
+-		err := rp.singleReaderContext.GetStatusChange(states, -1)
++		err = rp.singleReaderContext.GetStatusChange(states, -1)
+ 		if err != nil {
+ 			return
+ 		}
+@@ -148,6 +157,7 @@ func (rp *ReaderPoller) readerPoller(selectedReader string) {
+ 	}
+ }
+ 
++// CancelReaderPoler cancels the current reader polling operation.
+ func CancelReaderPoler() {
+ 	logger.Debug("Canceling reader poller...")
+ 	if createdPoller.readerPollerStarted.Load() {
+@@ -156,6 +166,7 @@ func CancelReaderPoler() {
+ 	}
+ }
+ 
++// RestartReaderPoler restarts the reader polling for the current reader.
+ func RestartReaderPoler() {
+ 	logger.Debug("Restarting reader poller...")
+ 	go createdPoller.readerPoller(createdPoller.currentReader)
+diff --git a/internal/gui/smartbox.go b/internal/gui/smartbox.go
+index d8cecdb..bb9b2e4 100644
+--- a/internal/gui/smartbox.go
++++ b/internal/gui/smartbox.go
+@@ -34,9 +34,9 @@ func startSmartboxUI() {
+ 	}
+ 
+ 	rows := container.New(layout.NewVBoxLayout(), state.toolbar, state.startPage, state.statusBar)
+-	state.documentUi = rows
++	state.documentUI = rows
+ 
+-	state.mainContainer.Add(state.documentUi)
++	state.mainContainer.Add(state.documentUI)
+ 
+ 	address, err := server.StartServer(modulePaths)
+ 
+@@ -56,7 +56,6 @@ func startSmartboxUI() {
+ }
+ 
+ func getVendorPreferenceKey(vendor pkcs11.CardVendor) string {
+-
+ 	switch vendor {
+ 	case pkcs11.CardVendorHalcom:
+ 		return halcomPkcsPathKey
+diff --git a/internal/gui/translation/translation.go b/internal/gui/translation/translation.go
+index ea95d44..45a5728 100644
+--- a/internal/gui/translation/translation.go
++++ b/internal/gui/translation/translation.go
+@@ -1,3 +1,4 @@
++// Package translation handles loading and retrieving translations for different languages.
+ package translation
+ 
+ import (
+@@ -12,19 +13,20 @@ var translations map[localization.Language]map[string]string
+ 
+ var currentLanguage localization.Language
+ 
++// SetTranslations loads translations from the embedded filesystem.
+ func SetTranslations(embedFS embed.FS) error {
+ 	translations = make(map[localization.Language]map[string]string)
+ 
+ 	languages := []localization.Language{localization.SrLatin, localization.SrCyrillic, localization.En}
+ 	for _, lang := range languages {
+-		langJson, err := embedFS.ReadFile("embed/translation/" + string(lang) + ".json")
++		langJSON, err := embedFS.ReadFile("embed/translation/" + string(lang) + ".json")
+ 		if err != nil {
+ 			return fmt.Errorf("reading %s translation: %w", lang, err)
+ 		}
+ 
+ 		langMap := make(map[string]string)
+ 
+-		err = json.Unmarshal(langJson, &langMap)
++		err = json.Unmarshal(langJSON, &langMap)
+ 		if err != nil {
+ 			return fmt.Errorf("%s translation unmarshal: %w", lang, err)
+ 		}
+@@ -35,30 +37,34 @@ func SetTranslations(embedFS embed.FS) error {
+ 	return nil
+ }
+ 
++// SetLanguage sets the current language for translations.
+ func SetLanguage(lang int) {
+-	if lang == 2 {
++	switch lang {
++	case 2:
+ 		currentLanguage = localization.En
+-	} else if lang == 1 {
++	case 1:
+ 		currentLanguage = localization.SrCyrillic
+-	} else {
++	default:
+ 		currentLanguage = localization.SrLatin
+ 	}
+ }
+ 
++// CurrentLanguage returns the currently set language.
+ func CurrentLanguage() localization.Language {
+ 	return currentLanguage
+ }
+ 
++// Translate returns the translation for the given ID in the current language.
+ func Translate(id string, vals ...any) string {
+ 	translation := translations[currentLanguage][id]
+ 
+ 	if len(vals) == 0 {
+ 		return translation
+-	} else {
+-		return fmt.Sprintf(translation, vals...)
+ 	}
++	return fmt.Sprintf(translation, vals...)
+ }
+ 
++// EnglishTranslation returns the English translation for the given ID.
+ func EnglishTranslation(id string) string {
+ 	return translations[localization.En][id]
+ }
+diff --git a/internal/gui/ui.go b/internal/gui/ui.go
+index c321879..9946cab 100644
+--- a/internal/gui/ui.go
++++ b/internal/gui/ui.go
+@@ -1,3 +1,4 @@
++// Package gui implements the graphical user interface for the Baš Čelik application.
+ package gui
+ 
+ import (
+@@ -15,17 +16,18 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/gui/widgets"
+ )
+ 
++// State holds the state of the GUI application.
+ type State struct {
+ 	version                 string
+ 	mu                      sync.Mutex
+ 	app                     fyne.App
+ 	window                  fyne.Window
+ 	mainContainer           *fyne.Container
+-	documentUi              *fyne.Container
+-	cryptoUiContainer       *fyne.Container
+-	cryptoUi                *fyne.Container
++	documentUI              *fyne.Container
++	cryptoUIContainer       *fyne.Container
++	cryptoUI                *fyne.Container
+ 	startPage               *widgets.StartPage
+-	documentUiMainContainer *fyne.Container
++	documentUIMainContainer *fyne.Container
+ 	toolbar                 *widgets.Toolbar
+ 	statusBar               *widgets.StatusBar
+ 	cardDocument            card.CardDocument
+@@ -36,6 +38,7 @@ type State struct {
+ 
+ var state State
+ 
++// StartGui initializes and starts the GUI application.
+ func StartGui(version string) {
+ 	app := app.New()
+ 	win := app.NewWindow("Baš Čelik")
+@@ -61,8 +64,8 @@ func StartGui(version string) {
+ 		window:                  win,
+ 		version:                 version,
+ 		mainContainer:           mainContainer,
+-		cryptoUiContainer:       cryptoContainer,
+-		documentUiMainContainer: mainPage,
++		cryptoUIContainer:       cryptoContainer,
++		documentUIMainContainer: mainPage,
+ 		startPage:               startPage,
+ 		statusBar:               statusBar,
+ 	}
+diff --git a/internal/gui/widgets/clipboard.go b/internal/gui/widgets/clipboard.go
+index af2b30d..b693951 100644
+--- a/internal/gui/widgets/clipboard.go
++++ b/internal/gui/widgets/clipboard.go
+@@ -2,6 +2,7 @@ package widgets
+ 
+ var clipboardHook func(string) bool
+ 
++// SetClipboard sets the clipboard hook function for copying text.
+ func SetClipboard(hook func(string) bool) {
+ 	clipboardHook = hook
+ }
+diff --git a/internal/gui/widgets/field.go b/internal/gui/widgets/field.go
+index 97e8341..35f7b30 100644
+--- a/internal/gui/widgets/field.go
++++ b/internal/gui/widgets/field.go
+@@ -10,6 +10,7 @@ import (
+ 	"fyne.io/fyne/v2/widget"
+ )
+ 
++// Field represents a labeled field widget with hover and copy functionality.
+ type Field struct {
+ 	widget.BaseWidget
+ 	name, value  string
+@@ -19,6 +20,7 @@ type Field struct {
+ 	valueChanged bool
+ }
+ 
++// FieldRenderer implements the fyne.WidgetRenderer interface for the Field.
+ type FieldRenderer struct {
+ 	field      *Field
+ 	background *canvas.Rectangle
+@@ -26,6 +28,7 @@ type FieldRenderer struct {
+ 	valueLabel *widget.Label
+ }
+ 
++// NewField creates a new Field with the given name, value, and minimum width.
+ func NewField(name, value string, minWidth float32) *Field {
+ 	field := &Field{
+ 		name:     name,
+@@ -36,6 +39,7 @@ func NewField(name, value string, minWidth float32) *Field {
+ 	return field
+ }
+ 
++// CreateRenderer creates a new renderer for the Field.
+ func (f *Field) CreateRenderer() fyne.WidgetRenderer {
+ 	nameText := canvas.NewText(f.name, theme.Color(theme.ColorNameForeground))
+ 	nameText.TextSize = 11
+@@ -56,24 +60,29 @@ func (f *Field) CreateRenderer() fyne.WidgetRenderer {
+ 	}
+ }
+ 
++// Cursor returns the cursor type when hovering over the field.
+ func (f *Field) Cursor() desktop.Cursor {
+ 	return desktop.PointerCursor
+ }
+ 
++// MouseIn handles mouse entering the field area.
+ func (f *Field) MouseIn(*desktop.MouseEvent) {
+ 	f.copied = false
+ 	f.hovered = true
+ 	f.Refresh()
+ }
+ 
++// MouseMoved handles mouse movement within the field.
+ func (f *Field) MouseMoved(*desktop.MouseEvent) {
+ }
+ 
++// MouseOut handles mouse leaving the field area.
+ func (f *Field) MouseOut() {
+ 	f.hovered = false
+ 	f.Refresh()
+ }
+ 
++// Tapped handles tap events on the field, copying the value to clipboard.
+ func (f *Field) Tapped(*fyne.PointEvent) {
+ 	if copyToClipboard(f.value) {
+ 		f.copied = true
+@@ -81,12 +90,14 @@ func (f *Field) Tapped(*fyne.PointEvent) {
+ 	f.Refresh()
+ }
+ 
++// SetValue updates the field's value.
+ func (f *Field) SetValue(value string) {
+ 	f.value = value
+ 	f.valueChanged = true
+ 	f.Refresh()
+ }
+ 
++// Refresh updates the visual representation of the field.
+ func (r *FieldRenderer) Refresh() {
+ 	if r.field.valueChanged {
+ 		r.valueLabel.SetText(r.field.value)
+@@ -103,6 +114,7 @@ func (r *FieldRenderer) Refresh() {
+ 	r.background.Refresh()
+ }
+ 
++// Layout positions the field elements within the given size.
+ func (r *FieldRenderer) Layout(s fyne.Size) {
+ 	r.nameText.Move(fyne.Position{X: theme.Padding(), Y: 0})
+ 	r.valueLabel.Resize(s.SubtractWidthHeight(0, 2*theme.Padding()))
+@@ -110,12 +122,15 @@ func (r *FieldRenderer) Layout(s fyne.Size) {
+ 	r.background.Resize(s)
+ }
+ 
++// MinSize returns the minimum size required for the field.
+ func (r *FieldRenderer) MinSize() fyne.Size {
+ 	return fyne.NewSize(r.field.minWidth+2*theme.Padding(), r.valueLabel.MinSize().Height-theme.Padding())
+ }
+ 
++// Objects returns the visual objects that make up the field.
+ func (r *FieldRenderer) Objects() []fyne.CanvasObject {
+ 	return []fyne.CanvasObject{r.background, r.valueLabel, r.nameText}
+ }
+ 
++// Destroy is a no-op for FieldRenderer.
+ func (r *FieldRenderer) Destroy() {}
+diff --git a/internal/gui/widgets/group.go b/internal/gui/widgets/group.go
+index 12bb6f4..e4fb4ad 100644
+--- a/internal/gui/widgets/group.go
++++ b/internal/gui/widgets/group.go
+@@ -9,18 +9,21 @@ import (
+ 	"fyne.io/fyne/v2/widget"
+ )
+ 
++// Group represents a titled group container for grouping related widgets.
+ type Group struct {
+ 	widget.BaseWidget
+ 	name    string
+ 	objects []fyne.CanvasObject
+ }
+ 
++// GroupRenderer implements the fyne.WidgetRenderer interface for the Group.
+ type GroupRenderer struct {
+ 	group    *Group
+ 	nameText *canvas.Text
+ 	column   *fyne.Container
+ }
+ 
++// NewGroup creates a new Group with the given name and objects.
+ func NewGroup(name string, objects ...fyne.CanvasObject) *Group {
+ 	group := &Group{
+ 		name:    name,
+@@ -30,6 +33,7 @@ func NewGroup(name string, objects ...fyne.CanvasObject) *Group {
+ 	return group
+ }
+ 
++// CreateRenderer creates a new renderer for the Group.
+ func (g *Group) CreateRenderer() fyne.WidgetRenderer {
+ 	nameText := canvas.NewText(g.name, theme.Color(theme.ColorNameForeground))
+ 	nameText.TextStyle.Bold = true
+@@ -47,22 +51,27 @@ func (g *Group) CreateRenderer() fyne.WidgetRenderer {
+ 	}
+ }
+ 
++// Refresh updates the visual representation of the group.
+ func (r *GroupRenderer) Refresh() {
+ 	r.column.Refresh()
+ 	r.nameText.Refresh()
+ }
+ 
++// Layout positions the group elements within the given size.
+ func (r *GroupRenderer) Layout(s fyne.Size) {
+ 	r.column.Move(fyne.Position{X: theme.Padding(), Y: 6 * theme.Padding()})
+ 	r.column.Layout.Layout(r.group.objects, s.SubtractWidthHeight(2*theme.Padding(), 0))
+ }
+ 
++// MinSize returns the minimum size required for the group.
+ func (r *GroupRenderer) MinSize() fyne.Size {
+ 	return fyne.NewSize(r.column.MinSize().Width+2*theme.Padding(), r.column.MinSize().Height+10*theme.Padding())
+ }
+ 
++// Objects returns the visual objects that make up the group.
+ func (r *GroupRenderer) Objects() []fyne.CanvasObject {
+ 	return []fyne.CanvasObject{r.column, r.nameText}
+ }
+ 
++// Destroy is a no-op for GroupRenderer.
+ func (r *GroupRenderer) Destroy() {}
+diff --git a/internal/gui/widgets/spacer.go b/internal/gui/widgets/spacer.go
+index 3d63cd5..cc17417 100644
+--- a/internal/gui/widgets/spacer.go
++++ b/internal/gui/widgets/spacer.go
+@@ -6,21 +6,25 @@ import (
+ 	"fyne.io/fyne/v2/widget"
+ )
+ 
++// Spacer represents a flexible spacing widget with configurable minimum width.
+ type Spacer struct {
+ 	widget.BaseWidget
+ 	minWidth float32
+ }
+ 
++// SpacerRenderer implements the fyne.WidgetRenderer interface for the Spacer.
+ type SpacerRenderer struct {
+ 	spacer *Spacer
+ }
+ 
++// NewSpacer creates a new Spacer widget.
+ func NewSpacer() *Spacer {
+ 	spacer := &Spacer{}
+ 	spacer.ExtendBaseWidget(spacer)
+ 	return spacer
+ }
+ 
++// SetMinWidth sets the minimum width for the spacer.
+ func (s *Spacer) SetMinWidth(width float32) {
+ 	if width < 0 {
+ 		width = 0
+@@ -29,16 +33,20 @@ func (s *Spacer) SetMinWidth(width float32) {
+ 	s.minWidth = width
+ }
+ 
++// CreateRenderer creates a new renderer for the Spacer.
+ func (s *Spacer) CreateRenderer() fyne.WidgetRenderer {
+ 	return &SpacerRenderer{
+ 		spacer: s,
+ 	}
+ }
+ 
++// Refresh is a no-op for SpacerRenderer.
+ func (r *SpacerRenderer) Refresh() {}
+ 
+-func (r *SpacerRenderer) Layout(s fyne.Size) {}
++// Layout is a no-op for SpacerRenderer.
++func (r *SpacerRenderer) Layout(_ fyne.Size) {}
+ 
++// MinSize returns the minimum size required for the spacer.
+ func (r *SpacerRenderer) MinSize() fyne.Size {
+ 	width := r.spacer.minWidth
+ 
+@@ -49,8 +57,10 @@ func (r *SpacerRenderer) MinSize() fyne.Size {
+ 	return fyne.NewSize(width, 5*theme.Padding())
+ }
+ 
++// Objects returns an empty slice as the spacer has no visual objects.
+ func (r *SpacerRenderer) Objects() []fyne.CanvasObject {
+ 	return []fyne.CanvasObject{}
+ }
+ 
++// Destroy is a no-op for SpacerRenderer.
+ func (r *SpacerRenderer) Destroy() {}
+diff --git a/internal/gui/widgets/startPage.go b/internal/gui/widgets/startPage.go
+index 942b6c1..615d61b 100644
+--- a/internal/gui/widgets/startPage.go
++++ b/internal/gui/widgets/startPage.go
+@@ -9,6 +9,7 @@ import (
+ 	"fyne.io/fyne/v2/widget"
+ )
+ 
++// StartPage represents the initial page displayed when the application starts.
+ type StartPage struct {
+ 	widget.BaseWidget
+ 	status      string
+@@ -16,6 +17,7 @@ type StartPage struct {
+ 	err         bool
+ }
+ 
++// StartPageRenderer implements the fyne.WidgetRenderer interface for the StartPage.
+ type StartPageRenderer struct {
+ 	page            *StartPage
+ 	statusText      *canvas.Text
+@@ -23,6 +25,7 @@ type StartPageRenderer struct {
+ 	container       *fyne.Container
+ }
+ 
++// NewStartPage creates a new StartPage instance.
+ func NewStartPage() *StartPage {
+ 	statusBar := &StartPage{
+ 		status:      "",
+@@ -33,12 +36,14 @@ func NewStartPage() *StartPage {
+ 	return statusBar
+ }
+ 
++// SetStatus updates the start page with a new status message and explanation.
+ func (sb *StartPage) SetStatus(status, explanation string, err bool) {
+ 	sb.status = status
+ 	sb.explanation = explanation
+ 	sb.err = err
+ }
+ 
++// CreateRenderer creates a new renderer for the StartPage.
+ func (sb *StartPage) CreateRenderer() fyne.WidgetRenderer {
+ 	statusText := canvas.NewText(sb.status, theme.Color(theme.ColorNameForeground))
+ 	statusText.TextSize = 16
+@@ -59,6 +64,7 @@ func (sb *StartPage) CreateRenderer() fyne.WidgetRenderer {
+ 	}
+ }
+ 
++// Refresh updates the visual representation of the start page.
+ func (r *StartPageRenderer) Refresh() {
+ 	r.statusText.Text = r.page.status
+ 	r.explanationText.Text = r.page.explanation
+@@ -73,16 +79,20 @@ func (r *StartPageRenderer) Refresh() {
+ 	r.explanationText.Refresh()
+ }
+ 
++// Layout positions the start page elements within the given size.
+ func (r *StartPageRenderer) Layout(s fyne.Size) {
+ 	r.container.Resize(s)
+ }
+ 
++// MinSize returns the minimum size required for the start page.
+ func (r *StartPageRenderer) MinSize() fyne.Size {
+ 	return fyne.NewSize(500, 300)
+ }
+ 
++// Objects returns the visual objects that make up the start page.
+ func (r *StartPageRenderer) Objects() []fyne.CanvasObject {
+ 	return []fyne.CanvasObject{r.container}
+ }
+ 
++// Destroy is a no-op for StartPageRenderer.
+ func (r *StartPageRenderer) Destroy() {}
+diff --git a/internal/gui/widgets/statusBar.go b/internal/gui/widgets/statusBar.go
+index 2f3a15d..166136e 100644
+--- a/internal/gui/widgets/statusBar.go
++++ b/internal/gui/widgets/statusBar.go
+@@ -7,17 +7,20 @@ import (
+ 	"fyne.io/fyne/v2/widget"
+ )
+ 
++// StatusBar represents a status bar widget that displays status messages.
+ type StatusBar struct {
+ 	widget.BaseWidget
+ 	status string
+ 	err    bool
+ }
+ 
++// StatusBarRenderer implements the fyne.WidgetRenderer interface for the StatusBar.
+ type StatusBarRenderer struct {
+ 	bar        *StatusBar
+ 	statusText *canvas.Text
+ }
+ 
++// NewStatusBar creates a new StatusBar instance.
+ func NewStatusBar() *StatusBar {
+ 	statusBar := &StatusBar{
+ 		status: "",
+@@ -27,15 +30,18 @@ func NewStatusBar() *StatusBar {
+ 	return statusBar
+ }
+ 
++// SetStatus updates the status bar with a new message and error state.
+ func (sb *StatusBar) SetStatus(status string, err bool) {
+ 	sb.status = status
+ 	sb.err = err
+ }
+ 
++// GetStatus returns the current status message.
+ func (sb *StatusBar) GetStatus() string {
+ 	return sb.status
+ }
+ 
++// CreateRenderer creates a new renderer for the StatusBar.
+ func (sb *StatusBar) CreateRenderer() fyne.WidgetRenderer {
+ 	statusText := canvas.NewText(sb.status, theme.Color(theme.ColorNameForeground))
+ 	statusText.TextSize = 11
+@@ -47,6 +53,7 @@ func (sb *StatusBar) CreateRenderer() fyne.WidgetRenderer {
+ 	}
+ }
+ 
++// Refresh updates the visual representation of the status bar.
+ func (r *StatusBarRenderer) Refresh() {
+ 	r.statusText.Text = r.bar.status
+ 
+@@ -59,17 +66,21 @@ func (r *StatusBarRenderer) Refresh() {
+ 	r.statusText.Refresh()
+ }
+ 
+-func (r *StatusBarRenderer) Layout(s fyne.Size) {
++// Layout positions the status bar elements within the given size.
++func (r *StatusBarRenderer) Layout(_ fyne.Size) {
+ 	r.statusText.Move(fyne.Position{X: theme.Padding(), Y: 2 * theme.Padding()})
+ }
+ 
++// MinSize returns the minimum size required for the status bar.
+ func (r *StatusBarRenderer) MinSize() fyne.Size {
+ 	ts1 := fyne.MeasureText(r.statusText.Text, r.statusText.TextSize, r.statusText.TextStyle)
+ 	return fyne.NewSize(ts1.Width+theme.Padding(), 2*ts1.Height)
+ }
+ 
++// Objects returns the visual objects that make up the status bar.
+ func (r *StatusBarRenderer) Objects() []fyne.CanvasObject {
+ 	return []fyne.CanvasObject{r.statusText}
+ }
+ 
++// Destroy is a no-op for StatusBarRenderer.
+ func (r *StatusBarRenderer) Destroy() {}
+diff --git a/internal/gui/widgets/toolbar.go b/internal/gui/widgets/toolbar.go
+index 4e61111..367cca0 100644
+--- a/internal/gui/widgets/toolbar.go
++++ b/internal/gui/widgets/toolbar.go
+@@ -1,3 +1,4 @@
++// Package widgets contains custom GUI widgets for the application.
+ package widgets
+ 
+ import (
+@@ -9,6 +10,7 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/gui/translation"
+ )
+ 
++// Toolbar represents the application toolbar with buttons and reader selection.
+ type Toolbar struct {
+ 	widget.BaseWidget
+ 	readers           []string
+@@ -19,6 +21,7 @@ type Toolbar struct {
+ 	showReaders       bool
+ }
+ 
++// ToolbarRenderer implements the fyne.WidgetRenderer interface for the Toolbar.
+ type ToolbarRenderer struct {
+ 	toolbar           *Toolbar
+ 	aboutButton       *widget.Button
+@@ -28,6 +31,7 @@ type ToolbarRenderer struct {
+ 	readersSelect     *widget.Select
+ }
+ 
++// NewToolbar creates a new Toolbar instance.
+ func NewToolbar(onOpenAbout, onOpenPreferences func(), showReaders bool) *Toolbar {
+ 	toolbar := &Toolbar{
+ 		readers:           nil,
+@@ -40,10 +44,12 @@ func NewToolbar(onOpenAbout, onOpenPreferences func(), showReaders bool) *Toolba
+ 	return toolbar
+ }
+ 
++// HookReaderChange sets the callback function for reader change events.
+ func (t *Toolbar) HookReaderChange(hook func(string)) {
+ 	t.onReaderChange = hook
+ }
+ 
++// CreateRenderer creates a new renderer for the Toolbar.
+ func (t *Toolbar) CreateRenderer() fyne.WidgetRenderer {
+ 	label := widget.NewLabel(translation.Translate("ui.reader"))
+ 
+@@ -78,56 +84,62 @@ func (t *Toolbar) CreateRenderer() fyne.WidgetRenderer {
+ 	}
+ }
+ 
+-func (r *ToolbarRenderer) Refresh() {
+-	if r.toolbar.showReaders {
+-		r.readersSelect.SetOptions(r.toolbar.readers)
+-		r.readersSelect.Selected = r.toolbar.selectedReader
++// Refresh updates the visual representation of the toolbar.
++func (t *ToolbarRenderer) Refresh() {
++	if t.toolbar.showReaders {
++		t.readersSelect.SetOptions(t.toolbar.readers)
++		t.readersSelect.Selected = t.toolbar.selectedReader
+ 
+-		if len(r.toolbar.readers) <= 1 {
+-			r.readersSelect.Disable()
++		if len(t.toolbar.readers) <= 1 {
++			t.readersSelect.Disable()
+ 		} else {
+-			r.readersSelect.Enable()
++			t.readersSelect.Enable()
+ 		}
+ 
+-		r.readersSelect.Refresh()
++		t.readersSelect.Refresh()
+ 	}
+ 
+-	r.aboutButton.Refresh()
++	t.aboutButton.Refresh()
+ }
+ 
+-func (r *ToolbarRenderer) Layout(s fyne.Size) {
++// Layout positions the toolbar elements within the given size.
++func (t *ToolbarRenderer) Layout(s fyne.Size) {
+ 	availableWidth := s.Width
+-	availableWidth -= r.aboutButton.Size().Width
+-	availableWidth -= r.preferencesButton.MinSize().Width
+-	if r.toolbar.showReaders {
+-		availableWidth -= r.readersLabel.MinSize().Width
++	availableWidth -= t.aboutButton.Size().Width
++	availableWidth -= t.preferencesButton.MinSize().Width
++	if t.toolbar.showReaders {
++		availableWidth -= t.readersLabel.MinSize().Width
+ 	}
+ 	availableWidth -= 2 * theme.InnerPadding()
+-	r.container.Resize(s)
+-	r.readersSelect.Resize(fyne.Size{Width: availableWidth, Height: s.Height})
++	t.container.Resize(s)
++	t.readersSelect.Resize(fyne.Size{Width: availableWidth, Height: s.Height})
+ }
+ 
+-func (r *ToolbarRenderer) MinSize() fyne.Size {
+-	return r.container.MinSize()
++// MinSize returns the minimum size required for the toolbar.
++func (t *ToolbarRenderer) MinSize() fyne.Size {
++	return t.container.MinSize()
+ }
+ 
+-func (r *ToolbarRenderer) Objects() []fyne.CanvasObject {
+-	objects := []fyne.CanvasObject{r.aboutButton, r.preferencesButton, r.container}
++// Objects returns the visual objects that make up the toolbar.
++func (t *ToolbarRenderer) Objects() []fyne.CanvasObject {
++	objects := []fyne.CanvasObject{t.aboutButton, t.preferencesButton, t.container}
+ 
+-	if r.toolbar.showReaders {
+-		objects = append(objects, r.readersSelect)
++	if t.toolbar.showReaders {
++		objects = append(objects, t.readersSelect)
+ 	}
+ 
+ 	return objects
+ }
+ 
+-func (r *ToolbarRenderer) Destroy() {}
++// Destroy is a no-op for ToolbarRenderer.
++func (t *ToolbarRenderer) Destroy() {}
+ 
+-func (r *Toolbar) SetReaders(readers []string, selectedReader string) {
+-	r.readers = make([]string, len(readers))
+-	copy(r.readers, readers)
++// SetReaders updates the list of available readers and sets the selected reader.
++func (t *Toolbar) SetReaders(readers []string, selectedReader string) {
++	t.readers = make([]string, len(readers))
++	copy(t.readers, readers)
+ 
+-	r.selectedReader = selectedReader
++	t.selectedReader = selectedReader
+ 
+-	r.Refresh()
++	t.Refresh()
+ }
+diff --git a/internal/logger/log.go b/internal/logger/log.go
+index 042be4a..362aead 100644
+--- a/internal/logger/log.go
++++ b/internal/logger/log.go
+@@ -1,3 +1,4 @@
++// Package logger provides simple logging functionalities for the application.
+ package logger
+ 
+ import (
+@@ -9,18 +10,22 @@ func init() {
+ 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+ }
+ 
++// DisableLog disables all logging output
+ func DisableLog() {
+ 	log.SetOutput(io.Discard)
+ }
+ 
++// Error logs error messages
+ func Error(err error) {
+ 	log.Println("ERROR", err.Error())
+ }
+ 
++// Info logs informational messages
+ func Info(message string) {
+ 	log.Println("INFO", message)
+ }
+ 
++// Debug logs debug messages when debug mode is enabled
+ func Debug(message string) {
+ 	log.Println("DEBUG", message)
+ }
+diff --git a/internal/read.go b/internal/read.go
+index 8d09369..5c13703 100644
+--- a/internal/read.go
++++ b/internal/read.go
+@@ -11,9 +11,10 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/document"
+ )
+ 
++// LaunchConfig contains configuration options for launching the application.
+ type LaunchConfig struct {
+ 	PdfPath               string
+-	JsonPath              string
++	JSONPath              string
+ 	ExcelPath             string
+ 	Verbose               bool
+ 	GetValidUntilFromRfzo bool
+@@ -35,9 +36,9 @@ func readAndSave(cfg LaunchConfig) error {
+ 		}
+ 	}
+ 
+-	if len(cfg.JsonPath) > 0 {
+-		if _, err := os.Stat(cfg.JsonPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+-			return fmt.Errorf("opening file %s: %w", cfg.JsonPath, err)
++	if len(cfg.JSONPath) > 0 {
++		if _, err := os.Stat(cfg.JSONPath); err != nil && !errors.Is(err, os.ErrNotExist) {
++			return fmt.Errorf("opening file %s: %w", cfg.JSONPath, err)
+ 		}
+ 	}
+ 
+@@ -109,15 +110,15 @@ func readAndSave(cfg LaunchConfig) error {
+ 		}
+ 	}
+ 
+-	if len(cfg.JsonPath) > 0 {
++	if len(cfg.JSONPath) > 0 {
+ 		json, err := doc.BuildJson()
+ 		if err != nil {
+ 			return fmt.Errorf("generating json: %w", err)
+ 		}
+ 
+-		err = os.WriteFile(cfg.JsonPath, json, 0600)
++		err = os.WriteFile(cfg.JSONPath, json, 0600)
+ 		if err != nil {
+-			return fmt.Errorf("writing file %s: %w", cfg.JsonPath, err)
++			return fmt.Errorf("writing file %s: %w", cfg.JSONPath, err)
+ 		}
+ 	}
+ 
+diff --git a/internal/runCLI.go b/internal/runCLI.go
+index 1fb468f..a0bc672 100644
+--- a/internal/runCLI.go
++++ b/internal/runCLI.go
+@@ -4,6 +4,7 @@ package internal
+ 
+ import "github.com/ubavic/bas-celik/v2/internal/logger"
+ 
++// Run runs the application with CLI interface.
+ func Run(cfg LaunchConfig) error {
+ 	if len(cfg.PdfPath) == 0 && len(cfg.JsonPath) == 0 && len(cfg.ExcelPath) == 0 {
+ 		logger.Info("no output file path detected, using default value")
+diff --git a/internal/runGUI.go b/internal/runGUI.go
+index e06686d..fe642ce 100644
+--- a/internal/runGUI.go
++++ b/internal/runGUI.go
+@@ -9,8 +9,9 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/logger"
+ )
+ 
++// Run runs the application with GUI interface.
+ func Run(cfg LaunchConfig) error {
+-	if len(cfg.PdfPath) == 0 && len(cfg.JsonPath) == 0 && len(cfg.ExcelPath) == 0 {
++	if len(cfg.PdfPath) == 0 && len(cfg.JSONPath) == 0 && len(cfg.ExcelPath) == 0 {
+ 		err := translation.SetTranslations(cfg.EmbedDirectory)
+ 		if err != nil {
+ 			return err
+diff --git a/internal/smartbox/pkcs11/externalModule.go b/internal/smartbox/pkcs11/externalModule.go
+index 2ef3783..a341975 100644
+--- a/internal/smartbox/pkcs11/externalModule.go
++++ b/internal/smartbox/pkcs11/externalModule.go
+@@ -1,3 +1,4 @@
++// Package pkcs11 provides a wrapper around PKCS#11 modules for smart card interactions.
+ package pkcs11
+ 
+ import (
+@@ -9,12 +10,13 @@ import (
+ 	"github.com/miekg/pkcs11"
+ )
+ 
++// NamedCert represents a certificate with its associated ID.
+ type NamedCert struct {
+-	Id          []byte
++	ID          []byte
+ 	Certificate *x509.Certificate
+ }
+ 
+-// wrapper around pkcs11.SessionHandle
++// PkcsModuleSession is a wrapper around pkcs11.SessionHandle
+ // caches module certificates
+ type PkcsModuleSession struct {
+ 	context *pkcs11.Ctx
+@@ -22,7 +24,7 @@ type PkcsModuleSession struct {
+ 	certs   []NamedCert
+ }
+ 
+-// wrapper around pkcs11.Ctx
++// pkcsModuleCtx is a wrapper around pkcs11.Ctx
+ // it is used only for reference counting
+ type pkcsModuleCtx struct {
+ 	context  *pkcs11.Ctx
+@@ -35,6 +37,7 @@ func init() {
+ 	gModuleContexts = make(map[string]pkcsModuleCtx)
+ }
+ 
++// NewPkcsExternalModule creates a new PkcsModuleSession for the given module path.
+ func NewPkcsExternalModule(modulePath string) (PkcsModuleSession, error) {
+ 	mc, ok := gModuleContexts[modulePath]
+ 	if !ok {
+@@ -48,19 +51,20 @@ func NewPkcsExternalModule(modulePath string) (PkcsModuleSession, error) {
+ 		mc = pkcsModuleCtx{context: pkcsCtx}
+ 	}
+ 
+-	mc.refCount += 1
++	mc.refCount++
+ 	gModuleContexts[modulePath] = mc
+ 
+ 	return PkcsModuleSession{context: mc.context}, nil
+ }
+ 
++// ListSlots lists the available slots with tokens in the PKCS#11 module.
+ func (pm *PkcsModuleSession) ListSlots() ([]uint, []string, error) {
+ 	slots, err := pm.context.GetSlotList(true)
+ 	if err != nil {
+ 		return nil, nil, fmt.Errorf("failed to get slot list: %w", err)
+ 	}
+ 
+-	slotIds := make([]uint, 0, len(slots))
++	slotIDs := make([]uint, 0, len(slots))
+ 	slotNames := make([]string, 0, len(slots))
+ 
+ 	for _, slot := range slots {
+@@ -76,19 +80,20 @@ func (pm *PkcsModuleSession) ListSlots() ([]uint, []string, error) {
+ 			continue
+ 		}
+ 
+-		slotIds = append(slotIds, slot)
++		slotIDs = append(slotIDs, slot)
+ 		slotNames = append(slotNames, info.SlotDescription)
+ 	}
+ 
+-	return slotIds, slotNames, nil
++	return slotIDs, slotNames, nil
+ }
+ 
+-func (pm *PkcsModuleSession) OpenSessionAndLogin(pin string, slotId int) error {
+-	if slotId < 0 {
+-		return fmt.Errorf("invalid slot id: %d", slotId)
++// OpenSessionAndLogin opens a session on the specified slot and logs in with the provided PIN.
++func (pm *PkcsModuleSession) OpenSessionAndLogin(pin string, slotID int) error {
++	if slotID < 0 {
++		return fmt.Errorf("invalid slot id: %d", slotID)
+ 	}
+ 
+-	session, err := pm.context.OpenSession(uint(slotId), pkcs11.CKF_SERIAL_SESSION|pkcs11.CKF_RW_SESSION)
++	session, err := pm.context.OpenSession(uint(slotID), pkcs11.CKF_SERIAL_SESSION|pkcs11.CKF_RW_SESSION)
+ 	if err != nil {
+ 		pm.context.Destroy()
+ 		return fmt.Errorf("failed to open PKCS#11 session: %w", err)
+@@ -96,7 +101,7 @@ func (pm *PkcsModuleSession) OpenSessionAndLogin(pin string, slotId int) error {
+ 
+ 	err = pm.context.Login(session, pkcs11.CKU_USER, pin)
+ 	if err != nil {
+-		pm.context.CloseSession(session)
++		_ = pm.context.CloseSession(session)
+ 		pm.context.Destroy()
+ 		return fmt.Errorf("failed to login to smart card: %w", err)
+ 	}
+@@ -148,6 +153,7 @@ func (pm *PkcsModuleSession) getRawCertificates() ([][]byte, [][]byte, error) {
+ 	return ids, certificates, errors.Join(allErrors...)
+ }
+ 
++// GetCertificates retrieves and caches the certificates from the PKCS#11 module.
+ func (pm *PkcsModuleSession) GetCertificates() ([]NamedCert, error) {
+ 	if len(pm.certs) > 0 {
+ 		return pm.certs, nil
+@@ -167,12 +173,13 @@ func (pm *PkcsModuleSession) GetCertificates() ([]NamedCert, error) {
+ 			continue
+ 		}
+ 
+-		pm.certs = append(pm.certs, NamedCert{Certificate: cert, Id: ids[i]})
++		pm.certs = append(pm.certs, NamedCert{Certificate: cert, ID: ids[i]})
+ 	}
+ 
+ 	return pm.certs, errors.Join(allErrors...)
+ }
+ 
++// CloseSession closes the PKCS#11 session and releases the module context if no more sessions are using it.
+ func (pm *PkcsModuleSession) CloseSession() error {
+ 	err1 := pm.context.Logout(pm.session)
+ 	err2 := pm.context.CloseSession(pm.session)
+@@ -195,10 +202,11 @@ func (pm *PkcsModuleSession) CloseSession() error {
+ 	return errors.Join(err1, err2)
+ }
+ 
+-func (pm *PkcsModuleSession) Sign(certId []byte, message []byte) ([]byte, error) {
++// Sign signs the given message using the private key associated with the specified certificate ID.
++func (pm *PkcsModuleSession) Sign(certID []byte, message []byte) ([]byte, error) {
+ 	err := pm.context.FindObjectsInit(pm.session, []*pkcs11.Attribute{
+ 		pkcs11.NewAttribute(pkcs11.CKA_CLASS, pkcs11.CKO_PRIVATE_KEY),
+-		pkcs11.NewAttribute(pkcs11.CKA_ID, certId),
++		pkcs11.NewAttribute(pkcs11.CKA_ID, certID),
+ 	})
+ 	if err != nil {
+ 		log.Fatalf("Failed to initialize private key search: %v", err)
+@@ -208,7 +216,10 @@ func (pm *PkcsModuleSession) Sign(certId []byte, message []byte) ([]byte, error)
+ 	if err != nil || len(objects) == 0 {
+ 		log.Fatalf("Private key not found")
+ 	}
+-	pm.context.FindObjectsFinal(pm.session)
++	err = pm.context.FindObjectsFinal(pm.session)
++	if err != nil {
++		return nil, err
++	}
+ 
+ 	mech := []*pkcs11.Mechanism{
+ 		pkcs11.NewMechanism(pkcs11.CKM_SHA256_RSA_PKCS, nil),
+diff --git a/internal/smartbox/pkcs11/vendor.go b/internal/smartbox/pkcs11/vendor.go
+index 9e14c9c..a98020d 100644
+--- a/internal/smartbox/pkcs11/vendor.go
++++ b/internal/smartbox/pkcs11/vendor.go
+@@ -1,15 +1,23 @@
++// Package pkcs11 provides utilities for handling PKCS#11 card vendors and their library paths.
+ package pkcs11
+ 
++// CardVendor represents different PKCS#11 card vendors.
+ type CardVendor int
+ 
+ const (
++	// CardVendorHalcom represents Halcom CA.
+ 	CardVendorHalcom = CardVendor(iota)
++	// CardVendorPosta represents Sertifikaciono telo Pošte.
+ 	CardVendorPosta
++	// CardVendorEsmart represents E-Smart Systems d.o.o. Beograd (ESS QCA).
+ 	CardVendorEsmart
++	// CardVendorMup represents Ministarstvo unutrašnjih poslova CA.
+ 	CardVendorMup
++	// CardVendorPks represents Privredna komora Srbije CA.
+ 	CardVendorPks
+ )
+ 
++// String returns the string representation of the CardVendor.
+ func (cv CardVendor) String() string {
+ 	switch cv {
+ 	case CardVendorHalcom:
+@@ -27,6 +35,7 @@ func (cv CardVendor) String() string {
+ 	}
+ }
+ 
++// GetDefaultPath returns the default PKCS#11 library path for the given card vendor and operating system.
+ func GetDefaultPath(cv CardVendor, os string) string {
+ 	if os == "linux" {
+ 		switch cv {
+diff --git a/internal/smartbox/server/getCertificates.go b/internal/smartbox/server/getCertificates.go
+index 8a44b27..f360580 100644
+--- a/internal/smartbox/server/getCertificates.go
++++ b/internal/smartbox/server/getCertificates.go
+@@ -10,15 +10,18 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11"
+ )
+ 
++// GetCertificatesInput represents the input parameters for retrieving certificates from a smart card terminal.
+ type GetCertificatesInput struct {
+-	TerminalId int    `json:"terminalId"`
++	TerminalID int    `json:"terminalId"`
+ 	Pin        string `json:"pin"`
+ }
+ 
++// GetCertificatesPayload represents the response payload containing a list of certificate aliases.
+ type GetCertificatesPayload struct {
+ 	Certificates []CertificateAlias `json:"certificates"`
+ }
+ 
++// CertificateAlias represents a certificate with its alias and common name.
+ type CertificateAlias struct {
+ 	Alias string `json:"alias"`
+ 	Name  string `json:"name"`
+@@ -34,7 +37,7 @@ func (s *SmartBoxServer) handleGetCertificates(session *SmartboxSession, data []
+ 		return fmt.Errorf("pkcs11 module not loaded")
+ 	}
+ 
+-	err := session.module.OpenSessionAndLogin(msg.Input.Pin, msg.Input.TerminalId)
++	err := session.module.OpenSessionAndLogin(msg.Input.Pin, msg.Input.TerminalID)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -54,6 +57,7 @@ func (s *SmartBoxServer) handleGetCertificates(session *SmartboxSession, data []
+ 	return json.NewEncoder(w).Encode(rsp)
+ }
+ 
++// GetValidCertificates filters a list of certificates and returns only those that are currently valid based on their validity period.
+ func GetValidCertificates(namedCerts []pkcs11.NamedCert) []pkcs11.NamedCert {
+ 	now := time.Now()
+ 
+@@ -73,11 +77,12 @@ func GetValidCertificates(namedCerts []pkcs11.NamedCert) []pkcs11.NamedCert {
+ 	return validNamedCertificates
+ }
+ 
++// GetCertificateAliases converts a list of named certificates into a list of certificate aliases containing ID and common name.
+ func GetCertificateAliases(namedCerts []pkcs11.NamedCert) []CertificateAlias {
+ 	aliases := make([]CertificateAlias, 0, len(namedCerts))
+ 	for _, namedCert := range namedCerts {
+ 		alias := CertificateAlias{
+-			Alias: hex.EncodeToString(namedCert.Id),
++			Alias: hex.EncodeToString(namedCert.ID),
+ 			Name:  namedCert.Certificate.Subject.CommonName,
+ 		}
+ 		aliases = append(aliases, alias)
+diff --git a/internal/smartbox/server/getInfo.go b/internal/smartbox/server/getInfo.go
+index a53efff..04c6aa2 100644
+--- a/internal/smartbox/server/getInfo.go
++++ b/internal/smartbox/server/getInfo.go
+@@ -6,19 +6,21 @@ import (
+ 	"io"
+ )
+ 
++// GetInfoInput represents the input parameters for the getInfo operation.
+ type GetInfoInput struct {
+ 	SbSession string `json:"sbSession"`
+ 	Language  string `json:"language"`
+ 	Host      string `json:"host"`
+ }
+ 
++// GetInfoPayload represents the response payload for the getInfo operation.
+ type GetInfoPayload struct {
+-	TerminalId    int    `json:"terminalId"`
+-	ProviderId    int    `json:"providerId"`
+-	CertificateId string `json:"certificateId"`
++	TerminalID    int    `json:"terminalId"`
++	ProviderID    int    `json:"providerId"`
++	CertificateID string `json:"certificateId"`
+ }
+ 
+-func (s *SmartBoxServer) handleGetInfo(sessionId *string, data []byte, w io.Writer) error {
++func (s *SmartBoxServer) handleGetInfo(sessionID *string, data []byte, w io.Writer) error {
+ 	msg := Message[GetInfoInput]{}
+ 	if err := json.Unmarshal(data, &msg); err != nil {
+ 		return err
+@@ -35,14 +37,14 @@ func (s *SmartBoxServer) handleGetInfo(sessionId *string, data []byte, w io.Writ
+ 		}
+ 	}
+ 
+-	*sessionId = msg.Input.SbSession
++	*sessionID = msg.Input.SbSession
+ 
+ 	rsp := Response[GetInfoPayload]{
+ 		Operation: operationGetInfo,
+ 		Payload: GetInfoPayload{
+-			TerminalId:    session.terminalId,
+-			ProviderId:    int(session.vendor),
+-			CertificateId: session.certificateId,
++			TerminalID:    session.terminalID,
++			ProviderID:    int(session.vendor),
++			CertificateID: session.certificateID,
+ 		},
+ 	}
+ 
+diff --git a/internal/smartbox/server/getProviders.go b/internal/smartbox/server/getProviders.go
+index fada9f0..35e5f7c 100644
+--- a/internal/smartbox/server/getProviders.go
++++ b/internal/smartbox/server/getProviders.go
+@@ -5,14 +5,17 @@ import (
+ 	"io"
+ )
+ 
++// GetProvidersInput represents the input parameters for retrieving available PKCS#11 providers.
+ type GetProvidersInput struct{}
+ 
++// GetProvidersPayload represents the response payload containing a list of available providers.
+ type GetProvidersPayload struct {
+ 	Providers []Provider `json:"providers"`
+ }
+ 
++// Provider represents a PKCS#11 provider with its ID and name.
+ type Provider struct {
+-	Id   int    `json:"id"`
++	ID   int    `json:"id"`
+ 	Name string `json:"name"`
+ }
+ 
+@@ -25,7 +28,7 @@ func (s *SmartBoxServer) handleGetProviders(data []byte, w io.Writer) error {
+ 	providers := make([]Provider, 0, len(s.modulePaths))
+ 	for _, module := range s.modulePaths {
+ 		providers = append(providers, Provider{
+-			Id:   int(module.Vendor),
++			ID:   int(module.Vendor),
+ 			Name: module.Vendor.String(),
+ 		})
+ 	}
+diff --git a/internal/smartbox/server/getSignedXml.go b/internal/smartbox/server/getSignedXml.go
+index 85122ff..d45a306 100644
+--- a/internal/smartbox/server/getSignedXml.go
++++ b/internal/smartbox/server/getSignedXml.go
+@@ -17,14 +17,16 @@ import (
+ 
+ const xmlHeader = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+ 
+-type GetSignedXmlInput struct {
++// GetSignedXMLInput represents the input parameters for the getSignedXml operation.
++type GetSignedXMLInput struct {
+ 	Certificate CertificateAlias `json:"certificate"`
+ 	Pin         string           `json:"pin"`
+-	Xml         string           `json:"xml"`
++	XML         string           `json:"xml"`
+ }
+ 
+-type GetSignedXmlPayload struct {
+-	Xml string `json:"xml"`
++// GetSignedXMLPayload represents the response payload for the getSignedXml operation.
++type GetSignedXMLPayload struct {
++	XML string `json:"xml"`
+ }
+ 
+ type envelopeReq struct {
+@@ -42,7 +44,7 @@ type envelopeResp struct {
+ 
+ type signature struct {
+ 	XMLName        xml.Name
+-	Xmlns          string `xml:"xmlns,attr"`
++	XMLns          string `xml:"xmlns,attr"`
+ 	SignedInfo     signedInfo
+ 	SignatureValue string
+ 	KeyInfo        struct {
+@@ -59,7 +61,7 @@ type signature struct {
+ 
+ type signedInfo struct {
+ 	XMLName                xml.Name
+-	Xmlns                  string `xml:"xmlns,attr,omitempty"`
++	XMLns                  string `xml:"xmlns,attr,omitempty"`
+ 	Ns2                    string `xml:"xmlns:ns2,attr,omitempty"`
+ 	CanonicalizationMethod struct {
+ 		Algorithm string `xml:",attr"`
+@@ -68,7 +70,7 @@ type signedInfo struct {
+ 		Algorithm string `xml:",attr"`
+ 	}
+ 	Reference struct {
+-		Uri        string `xml:"URI,attr"`
++		URI        string `xml:"URI,attr"`
+ 		Transforms struct {
+ 			Transform struct {
+ 				Algorithm string `xml:",attr"`
+@@ -81,8 +83,8 @@ type signedInfo struct {
+ 	}
+ }
+ 
+-func (s *SmartBoxServer) handleGetSignedXml(session *SmartboxSession, data []byte, w io.Writer) error {
+-	msg := Message[GetSignedXmlInput]{}
++func (s *SmartBoxServer) handleGetSignedXML(session *SmartboxSession, data []byte, w io.Writer) error {
++	msg := Message[GetSignedXMLInput]{}
+ 	if err := json.Unmarshal(data, &msg); err != nil {
+ 		return err
+ 	}
+@@ -91,20 +93,20 @@ func (s *SmartBoxServer) handleGetSignedXml(session *SmartboxSession, data []byt
+ 		return fmt.Errorf("pkcs11 module not loaded")
+ 	}
+ 
+-	certId, err := hex.DecodeString(msg.Input.Certificate.Alias)
++	certID, err := hex.DecodeString(msg.Input.Certificate.Alias)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	signXML, err := signRequest(session.module, certId, msg.Input.Xml)
++	signXML, err := signRequest(session.module, certID, msg.Input.XML)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	rsp := Response[GetSignedXmlPayload]{
++	rsp := Response[GetSignedXMLPayload]{
+ 		Operation: operationGetCertificates,
+-		Payload: GetSignedXmlPayload{
+-			Xml: base64.StdEncoding.EncodeToString(signXML),
++		Payload: GetSignedXMLPayload{
++			XML: base64.StdEncoding.EncodeToString(signXML),
+ 		},
+ 	}
+ 
+@@ -119,7 +121,7 @@ func signRequest(module PkcsModuleSession, id []byte, base64XmlRequest string) (
+ 
+ 	var cert *x509.Certificate
+ 	for _, namedCert := range namedCerts {
+-		if slices.Equal(namedCert.Id, id) {
++		if slices.Equal(namedCert.ID, id) {
+ 			cert = namedCert.Certificate
+ 		}
+ 	}
+@@ -151,7 +153,10 @@ func signRequest(module PkcsModuleSession, id []byte, base64XmlRequest string) (
+ 		return nil, err
+ 	}
+ 
+-	module.CloseSession()
++	err = module.CloseSession()
++	if err != nil {
++		return nil, err
++	}
+ 
+ 	envelope := constructResponse(cert, timestamp, signedInfo, signed)
+ 
+@@ -160,7 +165,10 @@ func signRequest(module PkcsModuleSession, id []byte, base64XmlRequest string) (
+ 
+ 	enc := xml.NewEncoder(&buf)
+ 	enc.Indent("", "")
+-	enc.Encode(envelope)
++	err = enc.Encode(envelope)
++	if err != nil {
++		return nil, err
++	}
+ 
+ 	return buf.Bytes(), nil
+ }
+@@ -178,7 +186,7 @@ func extractTimestamp(input []byte) (string, error) {
+ func constructResponse(cert *x509.Certificate, timestamp string, signedInfo signedInfo, signatureValue []byte) envelopeResp {
+ 	signatureValueBase64 := base64.StdEncoding.EncodeToString(signatureValue)
+ 
+-	signedInfo.Xmlns = ""
++	signedInfo.XMLns = ""
+ 	signedInfo.Ns2 = ""
+ 
+ 	signature := signatureXML(cert, signedInfo, signatureValueBase64)
+@@ -196,7 +204,7 @@ func constructSignedInfo(digestValue string) signedInfo {
+ 	signedInfo := signedInfo{}
+ 
+ 	signedInfo.XMLName = xml.Name{Local: "SignedInfo"}
+-	signedInfo.Xmlns = "http://www.w3.org/2000/09/xmldsig#"
++	signedInfo.XMLns = "http://www.w3.org/2000/09/xmldsig#"
+ 	signedInfo.Ns2 = "urn:poreskauprava.gov.rs/zim"
+ 	signedInfo.CanonicalizationMethod.Algorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+ 	signedInfo.SignatureMethod.Algorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+@@ -210,7 +218,7 @@ func constructSignedInfo(digestValue string) signedInfo {
+ func signatureXML(cert *x509.Certificate, signedInfo signedInfo, signatureValue string) signature {
+ 	sig := signature{}
+ 	sig.XMLName = xml.Name{Local: "Signature"}
+-	sig.Xmlns = "http://www.w3.org/2000/09/xmldsig#"
++	sig.XMLns = "http://www.w3.org/2000/09/xmldsig#"
+ 
+ 	sig.SignedInfo = signedInfo
+ 	sig.SignatureValue = signatureValue
+@@ -226,7 +234,10 @@ func (s *signedInfo) marshal() []byte {
+ 	buf := bytes.Buffer{}
+ 	enc := xml.NewEncoder(&buf)
+ 	enc.Indent("", "")
+-	enc.Encode(s)
++	err := enc.Encode(s)
++	if err != nil {
++		return nil
++	}
+ 
+ 	return buf.Bytes()
+ }
+diff --git a/internal/smartbox/server/getTerminals.go b/internal/smartbox/server/getTerminals.go
+index 638ce3f..483e0c7 100644
+--- a/internal/smartbox/server/getTerminals.go
++++ b/internal/smartbox/server/getTerminals.go
+@@ -1,3 +1,4 @@
++// Package server implements the SmartBox server functionality.
+ package server
+ 
+ import (
+@@ -9,16 +10,19 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11"
+ )
+ 
++// GetTerminalsInput represents the input for the GetTerminals request.
+ type GetTerminalsInput struct {
+-	ProviderId stringOrInt `json:"providerId"`
++	ProviderID stringOrInt `json:"providerId"`
+ }
+ 
++// GetTerminalsPayload represents the payload for the GetTerminals response.
+ type GetTerminalsPayload struct {
+ 	Terminals []Terminal `json:"terminals"`
+ }
+ 
++// Terminal represents a smart card terminal.
+ type Terminal struct {
+-	Id   string `json:"id"`
++	ID   string `json:"id"`
+ 	Name string `json:"name"`
+ }
+ 
+@@ -28,7 +32,7 @@ func (s *SmartBoxServer) handleGetTerminals(session *SmartboxSession, data []byt
+ 		return err
+ 	}
+ 
+-	providerID := msg.Input.ProviderId
++	providerID := msg.Input.ProviderID
+ 
+ 	if providerID < 0 || int(providerID) > int(pkcs11.CardVendorPks) {
+ 		return fmt.Errorf("invalid provider id")
+@@ -50,15 +54,15 @@ func (s *SmartBoxServer) handleGetTerminals(session *SmartboxSession, data []byt
+ 	session.vendor = pkcs11.CardVendor(providerID)
+ 	session.module = &module
+ 
+-	slotIds, slotNames, err := module.ListSlots()
++	slotIDs, slotNames, err := module.ListSlots()
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	terminals := make([]Terminal, 0, len(slotIds))
+-	for i, id := range slotIds {
++	terminals := make([]Terminal, 0, len(slotIDs))
++	for i, id := range slotIDs {
+ 		terminals = append(terminals, Terminal{
+-			Id:   fmt.Sprintf("%d", id),
++			ID:   fmt.Sprintf("%d", id),
+ 			Name: slotNames[i],
+ 		})
+ 	}
+diff --git a/internal/smartbox/server/server.go b/internal/smartbox/server/server.go
+index 829e507..76e2d0c 100644
+--- a/internal/smartbox/server/server.go
++++ b/internal/smartbox/server/server.go
+@@ -1,3 +1,4 @@
++// Package server implements the Smartbox server functionality.
+ package server
+ 
+ import (
+@@ -11,17 +12,20 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/logger"
+ )
+ 
++// Message represents a generic message structure for Smartbox communication.
+ type Message[I any] struct {
+ 	Operation string `json:"operation"`
+ 	Input     I
+ }
+ 
++// Response represents a generic response structure for Smartbox communication.
+ type Response[P any] struct {
+ 	Operation string `json:"operation"`
+ 	Status    int    `json:"status"`
+ 	Payload   P      `json:"payload"`
+ }
+ 
++// OnOpenPayload represents the payload sent on connection open.
+ type OnOpenPayload struct {
+ 	AppName    string `json:"appName"`
+ 	AppVersion string `json:"appVersion"`
+@@ -36,13 +40,15 @@ var operationGetInfo = "GET_INFO"
+ var operationGetProviders = "GET_PROVIDERS"
+ var operationGetTerminals = "GET_TERMINALS"
+ var operationGetCertificates = "GET_CERTIFICATES"
+-var operationGetSignedXml = "GET_SIGNED_XML"
++var operationGetSignedXML = "GET_SIGNED_XML"
+ 
++// SmartBoxServer represents the Smartbox server.
+ type SmartBoxServer struct {
+ 	sessions    map[string]SmartboxSession
+ 	modulePaths []ModulePath
+ }
+ 
++// ServeHTTP handles incoming HTTP requests and upgrades them to WebSocket connections.
+ func (s *SmartBoxServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+ 		OriginPatterns: []string{"eporezi.purs.gov.rs"},
+@@ -77,12 +83,15 @@ func (s *SmartBoxServer) smartBoxHandler(conn *websocket.Conn) error {
+ 		return err
+ 	}
+ 
+-	w.Close()
++	err = w.Close()
++	if err != nil {
++		return err
++	}
+ 
+-	sessionId := ""
++	sessionID := ""
+ 
+ 	for {
+-		err = s.onMessage(&sessionId, ctx, conn)
++		err = s.onMessage(&sessionID, ctx, conn)
+ 		if err != nil {
+ 			logger.Error(err)
+ 			break
+@@ -92,16 +101,19 @@ func (s *SmartBoxServer) smartBoxHandler(conn *websocket.Conn) error {
+ 	return conn.CloseNow()
+ }
+ 
+-func (s *SmartBoxServer) onMessage(sessionId *string, ctx context.Context, conn *websocket.Conn) error {
++func (s *SmartBoxServer) onMessage(sessionID *string, ctx context.Context, conn *websocket.Conn) error {
+ 	_, data, err := conn.Read(ctx)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+ 	msg := Message[any]{}
+-	json.Unmarshal(data, &msg)
++	err = json.Unmarshal(data, &msg)
++	if err != nil {
++		return err
++	}
+ 
+-	logger.Debug(fmt.Sprintf("Received `%s` message. Session `%s`.", msg.Operation, *sessionId))
++	logger.Debug(fmt.Sprintf("Received `%s` message. Session `%s`.", msg.Operation, *sessionID))
+ 
+ 	w, err := conn.Writer(ctx, websocket.MessageText)
+ 	if err != nil {
+@@ -110,26 +122,26 @@ func (s *SmartBoxServer) onMessage(sessionId *string, ctx context.Context, conn
+ 
+ 	defer w.Close()
+ 
+-	session, ok := s.sessions[*sessionId]
++	session, ok := s.sessions[*sessionID]
+ 	if !ok && msg.Operation != operationGetInfo {
+ 		return fmt.Errorf("session not found")
+ 	}
+ 
+ 	switch msg.Operation {
+ 	case operationGetInfo:
+-		err = s.handleGetInfo(sessionId, data, w)
++		err = s.handleGetInfo(sessionID, data, w)
+ 	case operationGetProviders:
+ 		err = s.handleGetProviders(data, w)
+ 	case operationGetTerminals:
+ 		err = s.handleGetTerminals(&session, data, w)
+ 	case operationGetCertificates:
+ 		err = s.handleGetCertificates(&session, data, w)
+-	case operationGetSignedXml:
+-		err = s.handleGetSignedXml(&session, data, w)
++	case operationGetSignedXML:
++		err = s.handleGetSignedXML(&session, data, w)
+ 	default:
+ 		err = fmt.Errorf("unknown operation %s", msg.Operation)
+ 	}
+ 
+-	s.sessions[*sessionId] = session
++	s.sessions[*sessionID] = session
+ 	return err
+ }
+diff --git a/internal/smartbox/server/session.go b/internal/smartbox/server/session.go
+index 29cc246..70d6543 100644
+--- a/internal/smartbox/server/session.go
++++ b/internal/smartbox/server/session.go
+@@ -1,3 +1,4 @@
++// Package server implements the Smartbox server functionality.
+ package server
+ 
+ import (
+@@ -6,22 +7,25 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11"
+ )
+ 
++// PkcsModuleSession defines the interface for PKCS#11 module sessions.
+ type PkcsModuleSession interface {
+ 	ListSlots() ([]uint, []string, error)
+ 	OpenSessionAndLogin(pin string, terminalIndex int) error
+ 	GetCertificates() ([]pkcs11.NamedCert, error)
+-	Sign(certId []byte, message []byte) ([]byte, error)
++	Sign(certID []byte, message []byte) ([]byte, error)
+ 	CloseSession() error
+ }
+ 
++// SmartboxSession represents a session with the Smartbox server.
+ type SmartboxSession struct {
+ 	id            string
+ 	module        PkcsModuleSession
+-	terminalId    int
++	terminalID    int
+ 	vendor        pkcs11.CardVendor
+-	certificateId string
++	certificateID string
+ }
+ 
++// ModulePath represents the path to a PKCS#11 module along with its vendor.
+ type ModulePath struct {
+ 	Vendor pkcs11.CardVendor
+ 	Path   string
+diff --git a/internal/smartbox/server/start.go b/internal/smartbox/server/start.go
+index 7eea7fb..56bf4fa 100644
+--- a/internal/smartbox/server/start.go
++++ b/internal/smartbox/server/start.go
+@@ -1,3 +1,4 @@
++// Package server contains the implementation of the Smartbox server.
+ package server
+ 
+ import (
+@@ -9,6 +10,7 @@ import (
+ 	"github.com/ubavic/bas-celik/v2/internal/logger"
+ )
+ 
++// StartServer starts the Smartbox server on an available port and returns the address.
+ func StartServer(modulePaths []ModulePath) (string, error) {
+ 	smartboxServer := SmartBoxServer{}
+ 	smartboxServer.sessions = make(map[string]SmartboxSession)
+@@ -36,7 +38,7 @@ func StartServer(modulePaths []ModulePath) (string, error) {
+ 	}
+ 
+ 	go func() {
+-		s.Serve(l)
++		_ = s.Serve(l)
+ 	}()
+ 
+ 	logger.Info(fmt.Sprintf("Smartbox server listening on ws://%v", l.Addr()))
+@@ -48,7 +50,7 @@ func findAvailablePort(ports []uint) uint {
+ 	for _, port := range ports {
+ 		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+ 		if err == nil {
+-			listener.Close()
++			_ = listener.Close()
+ 			return port
+ 		}
+ 	}
+diff --git a/localization/format.go b/localization/format.go
+index 9aa8aa8..21cd0e8 100644
+--- a/localization/format.go
++++ b/localization/format.go
+@@ -1,30 +1,30 @@
++// Package localization provides localization formatting functions.
+ package localization
+ 
+ import "strings"
+ 
++// FormatYesNo returns the localized string for a boolean value
+ func FormatYesNo(a bool, script Language) string {
+-	if script == SrLatin {
++	switch script {
++	case SrLatin:
+ 		if a {
+ 			return "Da"
+-		} else {
+-			return "Ne"
+ 		}
+-	} else if script == SrCyrillic {
++		return "Ne"
++	case SrCyrillic:
+ 		if a {
+ 			return "Да"
+-		} else {
+-			return "Не"
+ 		}
+-	} else {
++		return "Не"
++	default:
+ 		if a {
+ 			return "Yes"
+-		} else {
+-			return "No"
+ 		}
++		return "No"
+ 	}
+ }
+ 
+-// Expects a pointer to a date in the format DDMMYYYY.
++// FormatDate expects a pointer to a date in the format DDMMYYYY.
+ // Modifies, in place, date to format DD.MM.YYYY.
+ func FormatDate(in *string) {
+ 	chars := strings.Split(*in, "")
+@@ -38,7 +38,7 @@ func FormatDate(in *string) {
+ 	*in = chars[0] + chars[1] + "." + chars[2] + chars[3] + "." + chars[4] + chars[5] + chars[6] + chars[7] + "."
+ }
+ 
+-// Expects a pointer to a date in the format YYYYMMDD.
++// FormatDateYMD expects a pointer to a date in the format YYYYMMDD.
+ // Modifies, in place, date to format DD.MM.YYYY.
+ func FormatDateYMD(in *string) {
+ 	chars := strings.Split(*in, "")
+@@ -48,7 +48,7 @@ func FormatDateYMD(in *string) {
+ 	*in = chars[6] + chars[7] + "." + chars[4] + chars[5] + "." + chars[0] + chars[1] + chars[2] + chars[3]
+ }
+ 
+-// Joins list of strings into a single string
++// JoinWithComma joins a list of strings into a single string
+ // separating them with a comma and a space.
+ // Empty strings are skipped.
+ func JoinWithComma(strs ...string) string {
+diff --git a/localization/language.go b/localization/language.go
+index 3b61a67..4553512 100644
+--- a/localization/language.go
++++ b/localization/language.go
+@@ -1,7 +1,14 @@
++// Package localization provides localization language definitions.
+ package localization
+ 
++// Language represents a localization language.
+ type Language string
+ 
++// SrLatin represents Serbian language in Latin script.
+ const SrLatin = Language("sr-latin")
++
++// SrCyrillic represents Serbian language in Cyrillic script.
+ const SrCyrillic = Language("sr-cyrillic")
++
++// En represents English language.
+ const En = Language("en")
+diff --git a/localization/scripts.go b/localization/scripts.go
+index e754455..f56e686 100644
+--- a/localization/scripts.go
++++ b/localization/scripts.go
+@@ -10,6 +10,7 @@ var latin = []string{
+ 	"a", "b", "v", "g", "d", "đ", "e", "ž", "z", "i", "j", "k", "l", "lj", "m", "n", "nj", "o", "p", "r", "s", "t", "ć", "u", "f", "h", "c", "č", "dž", "š",
+ }
+ 
++// CyrillicToLatin converts a string from Cyrillic script to Latin script.
+ func CyrillicToLatin(str string) string {
+ 	out := ""
+ 
+diff --git a/main.go b/main.go
+index 1d38c31..05ad9b1 100644
+--- a/main.go
++++ b/main.go
+@@ -1,3 +1,4 @@
++// Package main is the entry point for the bas-celik application.
+ package main
+ 
+ import (

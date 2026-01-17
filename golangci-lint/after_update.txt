@@ -1,0 +1,76 @@
+card/gemalto.go:384:25: Error return value of `zlibReader.Close` is not checked (errcheck)
+		defer zlibReader.Close()
+		                      ^
+document/medical.go:297:23: Error return value of `resp.Body.Close` is not checked (errcheck)
+	defer resp.Body.Close()
+	                     ^
+internal/flags.go:67:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/flags.go:87:24: Error return value of `sCard.Disconnect` is not checked (errcheck)
+	defer sCard.Disconnect(scard.LeaveCard)
+	                      ^
+internal/flags.go:105:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/gui/about.go:72:23: Error return value of `res.Body.Close` is not checked (errcheck)
+		defer res.Body.Close()
+		                    ^
+internal/gui/reader/poller.go:165:43: Error return value of `createdPoller.singleReaderContext.Cancel` is not checked (errcheck)
+		createdPoller.singleReaderContext.Cancel()
+		                                        ^
+internal/read.go:31:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/read.go:69:24: Error return value of `sCard.Disconnect` is not checked (errcheck)
+	defer sCard.Disconnect(scard.LeaveCard)
+	                      ^
+internal/smartbox/server/server.go:63:21: Error return value of `conn.CloseNow` is not checked (errcheck)
+	defer conn.CloseNow()
+	                   ^
+internal/smartbox/server/server.go:123:15: Error return value of `w.Close` is not checked (errcheck)
+	defer w.Close()
+	             ^
+card/card.go:27:6: exported: type name will be used as card.CardDocument by other packages, and that stutters; consider calling this Document (revive)
+type CardDocument interface {
+     ^
+card/card.go:39:6: exported: type name will be used as card.CardDocumentType by other packages, and that stutters; consider calling this DocumentType (revive)
+type CardDocumentType uint8
+     ^
+document/document.go:21:6: exported: type name will be used as document.DocumentConfig by other packages, and that stutters; consider calling this Config (revive)
+type DocumentConfig struct {
+     ^
+document/id.go:19:7: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+const ID_TYPE_APOLLO = ""
+      ^
+document/id.go:22:7: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+const ID_TYPE_ID = "ID"
+      ^
+document/id.go:25:7: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+const ID_TYPE_IDENTITY_FOREIGNER = "IF"
+      ^
+document/id.go:91:9: indent-error-flow: if block ends with a return statement, so drop this else and outdent its block (revive)
+	} else {
+		return localization.JoinWithComma(streetAndNumber, doc.Community, doc.Place)
+	}
+document/id.go:159:24: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *IDDocument) BuildJson() ([]byte, error) {
+                       ^
+document/medical.go:267:29: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *MedicalDocument) BuildJson() ([]byte, error) {
+                            ^
+document/vehicle.go:296:29: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *VehicleDocument) BuildJson() ([]byte, error) {
+                            ^
+internal/gui/reader/poller.go:18:6: exported: type name will be used as reader.ReaderPoller by other packages, and that stutters; consider calling this Poller (revive)
+type ReaderPoller struct {
+     ^
+internal/gui/reader/poller.go:29:6: exported: type name will be used as reader.ReaderLister by other packages, and that stutters; consider calling this Lister (revive)
+type ReaderLister interface {
+     ^
+internal/smartbox/server/server.go:104:55: context-as-argument: context.Context should be the first parameter of a function (revive)
+func (s *SmartBoxServer) onMessage(sessionID *string, ctx context.Context, conn *websocket.Conn) error {
+                                                      ^
+24 issues:
+* errcheck: 11
+* revive: 13

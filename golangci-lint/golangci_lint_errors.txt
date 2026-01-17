@@ -1,0 +1,1298 @@
+card/gemalto.go:376:25: Error return value of `zlibReader.Close` is not checked (errcheck)
+		defer zlibReader.Close()
+		                      ^
+document/document_test.go:30:20: Error return value of `document.Configure` is not checked (errcheck)
+	document.Configure(documentConfig)
+	                  ^
+document/document_test.go:34:20: Error return value of `document.Configure` is not checked (errcheck)
+	document.Configure(document.DocumentConfig{})
+	                  ^
+document/excel.go:35:17: Error return value of `f.SetCellValue` is not checked (errcheck)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", currentRow), label)
+		              ^
+document/excel.go:36:17: Error return value of `f.SetCellValue` is not checked (errcheck)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", currentRow), value)
+		              ^
+document/medical.go:290:23: Error return value of `resp.Body.Close` is not checked (errcheck)
+	defer resp.Body.Close()
+	                     ^
+internal/flags.go:65:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/flags.go:85:24: Error return value of `sCard.Disconnect` is not checked (errcheck)
+	defer sCard.Disconnect(scard.LeaveCard)
+	                      ^
+internal/flags.go:103:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/gui/about.go:72:23: Error return value of `res.Body.Close` is not checked (errcheck)
+		defer res.Body.Close()
+		                    ^
+internal/gui/poller.go:36:24: Error return value of `sCard.EndTransaction` is not checked (errcheck)
+			sCard.EndTransaction(scard.LeaveCard)
+			                    ^
+internal/gui/reader/linux.go:16:40: Error return value of `rp.readerListerContext.GetStatusChange` is not checked (errcheck)
+	rp.readerListerContext.GetStatusChange(states, -1)
+	                                      ^
+internal/gui/reader/poller.go:132:41: Error return value of `rp.singleReaderContext.GetStatusChange` is not checked (errcheck)
+		rp.singleReaderContext.GetStatusChange(states, 0)
+		                                      ^
+internal/gui/reader/poller.go:155:43: Error return value of `createdPoller.singleReaderContext.Cancel` is not checked (errcheck)
+		createdPoller.singleReaderContext.Cancel()
+		                                        ^
+internal/read.go:30:19: Error return value of `ctx.Release` is not checked (errcheck)
+	defer ctx.Release()
+	                 ^
+internal/read.go:68:24: Error return value of `sCard.Disconnect` is not checked (errcheck)
+	defer sCard.Disconnect(scard.LeaveCard)
+	                      ^
+internal/smartbox/pkcs11/externalModule.go:99:26: Error return value of `pm.context.CloseSession` is not checked (errcheck)
+		pm.context.CloseSession(session)
+		                       ^
+internal/smartbox/pkcs11/externalModule.go:211:29: Error return value of `pm.context.FindObjectsFinal` is not checked (errcheck)
+	pm.context.FindObjectsFinal(pm.session)
+	                           ^
+internal/smartbox/server/getSignedXml.go:154:21: Error return value of `module.CloseSession` is not checked (errcheck)
+	module.CloseSession()
+	                   ^
+internal/smartbox/server/getSignedXml.go:163:12: Error return value of `enc.Encode` is not checked (errcheck)
+	enc.Encode(envelope)
+	          ^
+internal/smartbox/server/getSignedXml.go:229:12: Error return value of `enc.Encode` is not checked (errcheck)
+	enc.Encode(s)
+	          ^
+internal/smartbox/server/server.go:57:21: Error return value of `conn.CloseNow` is not checked (errcheck)
+	defer conn.CloseNow()
+	                   ^
+internal/smartbox/server/server.go:80:9: Error return value of `w.Close` is not checked (errcheck)
+	w.Close()
+	       ^
+internal/smartbox/server/server.go:102:16: Error return value of `json.Unmarshal` is not checked (errcheck)
+	json.Unmarshal(data, &msg)
+	              ^
+internal/smartbox/server/server.go:111:15: Error return value of `w.Close` is not checked (errcheck)
+	defer w.Close()
+	             ^
+internal/smartbox/server/start.go:39:10: Error return value of `s.Serve` is not checked (errcheck)
+		s.Serve(l)
+		       ^
+internal/smartbox/server/start.go:51:18: Error return value of `listener.Close` is not checked (errcheck)
+			listener.Close()
+			              ^
+card/apdu.go:15:6: G602: slice index out of range (gosec)
+	apdu[0] = cla
+	    ^
+card/apdu.go:16:6: G602: slice index out of range (gosec)
+	apdu[1] = ins
+	    ^
+card/apdu.go:17:6: G602: slice index out of range (gosec)
+	apdu[2] = p1
+	    ^
+card/ber/ber.go:171:12: G115: integer overflow conversion int -> uint32 (gosec)
+		if uint32(len(data)) <= offset+length {
+		         ^
+card/ber/ber.go:186:22: G115: integer overflow conversion int -> uint32 (gosec)
+		if offset == uint32(len(data)) {
+		                   ^
+card/ber/ber.go:188:28: G115: integer overflow conversion int -> uint32 (gosec)
+		} else if offset > uint32(len(data)) {
+		                         ^
+card/medical_test.go:47:16: G115: integer overflow conversion int -> uint (gosec)
+				fields[uint(i)] = decoded
+				           ^
+card/medical_test.go:49:28: G115: integer overflow conversion int -> uint (gosec)
+				descramble(fields, uint(i))
+				                       ^
+card/medical_test.go:50:33: G115: integer overflow conversion int -> uint (gosec)
+				if !slices.Equal(fields[uint(i)], []byte(testCase.expectedData)) {
+				                            ^
+card/apollo.go:27:1: exported: exported method Apollo.InitCard should have comment or be unexported (revive)
+func (card *Apollo) InitCard() error {
+^
+card/apollo.go:31:1: exported: exported method Apollo.ReadCard should have comment or be unexported (revive)
+func (card *Apollo) ReadCard() error {
+^
+card/apollo.go:60:1: exported: exported method Apollo.GetDocument should have comment or be unexported (revive)
+func (card *Apollo) GetDocument() (document.Document, error) {
+^
+card/apollo.go:86:1: exported: exported method Apollo.Atr should have comment or be unexported (revive)
+func (card *Apollo) Atr() Atr {
+^
+card/apollo.go:90:1: exported: exported method Apollo.ReadFile should have comment or be unexported (revive)
+func (card *Apollo) ReadFile(name []byte) ([]byte, error) {
+^
+card/apollo.go:128:1: exported: exported method Apollo.Test should have comment or be unexported (revive)
+func (card *Apollo) Test() bool {
+^
+card/atr.go:8:6: exported: exported type Atr should have comment or be unexported (revive)
+type Atr []byte
+     ^
+card/atr.go:14:1: exported: exported method Atr.Is should have comment or be unexported (revive)
+func (atr Atr) Is(otherAtr Atr) bool {
+^
+card/atr.go:18:1: exported: exported function DetectCardDocumentByAtr should have comment or be unexported (revive)
+func DetectCardDocumentByAtr(atr Atr) []CardDocumentType {
+^
+card/ber/ber.go:12:1: exported: comment on exported type BER should be of the form "BER ..." (with optional leading article) (revive)
+// Represents a node (or a tree) of a BER structure.
+^
+card/ber/ber.go:22:1: exported: comment on exported function ParseBER should be of the form "ParseBER ..." (revive)
+// Parses BER data (described in ISO/IEC 7816-4 (2005)).
+^
+card/ber/ber.go:78:20: var-declaration: should drop = nil from declaration of var found; it is the zero value (revive)
+		var found *BER = nil
+		                 ^
+card/ber/ber.go:96:1: receiver-naming: receiver name into should be consistent with previous receiver name tree for BER (revive)
+func (into *BER) add(new BER) error {
+	if into.primitive {
+		return errors.New("can't add a value into primitive value")
+	}
+
+	var targetField *BER
+
+	alreadyExists := false
+	for i := range into.children {
+		if into.children[i].tag == new.tag {
+			alreadyExists = true
+			targetField = &into.children[i]
+			break
+		}
+	}
+
+	if !alreadyExists {
+		into.children = append(into.children, new)
+		return nil
+	} else {
+		if targetField.primitive == new.primitive {
+			if targetField.primitive {
+				*targetField = new
+			} else {
+				for i := range new.children {
+					err := targetField.add(new.children[i])
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			return errors.New("types don't match")
+		}
+	}
+
+	return nil
+}
+card/ber/ber.go:137:1: receiver-naming: receiver name into should be consistent with previous receiver name tree for BER (revive)
+func (into *BER) Merge(new BER) error {
+	if into.tag != new.tag {
+		return errors.New("tags don't match")
+	}
+
+	for _, c := range new.children {
+		if err := into.add(c); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+card/ber/ber.go:196:1: exported: exported method BER.AssignFrom should have comment or be unexported (revive)
+func (tree *BER) AssignFrom(target *string, address ...uint32) {
+^
+card/ber/ber.go:226:1: exported: comment on exported function ParseLength should be of the form "ParseLength ..." (revive)
+// Parses length of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
+^
+card/ber/ber.go:259:1: exported: comment on exported function ParseTag should be of the form "ParseTag ..." (revive)
+// Parses tag of a field according to specification given in ISO 7816-4 (5. Organization for interchange).
+^
+card/card.go:15:1: exported: comment on exported type Card should be of the form "Card ..." (with optional leading article) (revive)
+// Represents a physical or virtual smart card.
+^
+card/card.go:25:1: exported: comment on exported type CardDocument should be of the form "CardDocument ..." (with optional leading article) (revive)
+// Represents a smart card with a document.
+^
+card/card.go:27:6: exported: type name will be used as card.CardDocument by other packages, and that stutters; consider calling this Document (revive)
+type CardDocument interface {
+     ^
+card/card.go:36:1: exported: comment on exported type CardDocumentType should be of the form "CardDocumentType ..." (with optional leading article) (revive)
+// Represents a different types of smart card documents.
+^
+card/card.go:39:6: exported: type name will be used as card.CardDocumentType by other packages, and that stutters; consider calling this DocumentType (revive)
+type CardDocumentType uint8
+     ^
+card/card.go:42:2: exported: exported const UnknownDocumentCardType should have comment (or a comment on this block) or be unexported (revive)
+	UnknownDocumentCardType = CardDocumentType(iota)
+	^
+card/card.go:43:2: var-naming: const ApolloIdDocumentCardType should be ApolloIDDocumentCardType (revive)
+	ApolloIdDocumentCardType
+	^
+card/card.go:44:2: var-naming: const GemaltoIdDocumentCardType should be GemaltoIDDocumentCardType (revive)
+	GemaltoIdDocumentCardType
+	^
+card/card.go:49:5: exported: exported var ErrUnknownCard should have comment or be unexported (revive)
+var ErrUnknownCard = errors.New("unknown card")
+    ^
+card/card.go:51:1: exported: comment on exported function DetectCardDocument should be of the form "DetectCardDocument ..." (revive)
+// Detects Card Document from card's ATR
+^
+card/cardErrors/error.go:1:9: var-naming: don't use MixedCaps in package names; cardErrors should be carderrors (revive)
+package cardErrors
+        ^
+card/cardErrors/error.go:5:5: exported: exported var ErrInvalidLength should have comment or be unexported (revive)
+var ErrInvalidLength = errors.New("invalid length")
+    ^
+card/cardErrors/error.go:6:5: exported: exported var ErrInvalidFormat should have comment or be unexported (revive)
+var ErrInvalidFormat = errors.New("invalid format")
+    ^
+card/gemalto.go:24:1: exported: comment on exported var GEMALTO_ATR_2 should be of the form "GEMALTO_ATR_2 ..." (revive)
+// Available since January 2023 (maybe). Replaced very soon with an even newer version.
+^
+card/gemalto.go:31:1: exported: comment on exported var GEMALTO_ATR_3 should be of the form "GEMALTO_ATR_3 ..." (revive)
+// Available since July 2023.
+^
+card/gemalto.go:38:1: exported: comment on exported var GEMALTO_ATR_4 should be of the form "GEMALTO_ATR_4 ..." (revive)
+// Available since June 2024.
+^
+card/gemalto.go:57:1: exported: exported method Gemalto.InitCard should have comment or be unexported (revive)
+func (card *Gemalto) InitCard() error {
+^
+card/gemalto.go:94:1: exported: exported method Gemalto.ReadCard should have comment or be unexported (revive)
+func (card *Gemalto) ReadCard() error {
+^
+card/gemalto.go:122:1: exported: exported method Gemalto.GetDocument should have comment or be unexported (revive)
+func (card *Gemalto) GetDocument() (document.Document, error) {
+^
+card/gemalto.go:148:1: exported: exported method Gemalto.Atr should have comment or be unexported (revive)
+func (card *Gemalto) Atr() Atr {
+^
+card/gemalto.go:152:1: exported: exported method Gemalto.ReadFile should have comment or be unexported (revive)
+func (card *Gemalto) ReadFile(name []byte) ([]byte, error) {
+^
+card/gemalto.go:240:1: exported: exported method Gemalto.Test should have comment or be unexported (revive)
+func (card *Gemalto) Test() bool {
+^
+card/gemalto.go:250:1: exported: comment on exported method Gemalto.InitCrypto should be of the form "InitCrypto ..." (revive)
+// Initialize card's cryptography application
+^
+card/gemalto.go:266:1: exported: comment on exported method Gemalto.ChangePin should be of the form "ChangePin ..." (revive)
+// Returns number of tries left, and occurred error.
+^
+card/gemalto.go:321:1: exported: exported method Gemalto.ReadSignatures should have comment or be unexported (revive)
+func (card *Gemalto) ReadSignatures() error {
+^
+card/gemalto.go:337:1: exported: exported method Gemalto.LoadCertificates should have comment or be unexported (revive)
+func (card *Gemalto) LoadCertificates() error {
+^
+card/gemalto.go:396:1: exported: exported method Gemalto.GetCertificates should have comment or be unexported (revive)
+func (card *Gemalto) GetCertificates() []x509.Certificate {
+^
+card/idCard.go:13:1: exported: comment on exported var ID_DOCUMENT_FILE_LOC should be of the form "ID_DOCUMENT_FILE_LOC ..." (revive)
+// Location of the file with document data.
+^
+card/idCard.go:14:5: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+var ID_DOCUMENT_FILE_LOC = []byte{0x0F, 0x02}
+    ^
+card/idCard.go:16:1: exported: comment on exported var ID_PERSONAL_FILE_LOC should be of the form "ID_PERSONAL_FILE_LOC ..." (revive)
+// Location of the file with personal data.
+^
+card/idCard.go:17:5: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+var ID_PERSONAL_FILE_LOC = []byte{0x0F, 0x03}
+    ^
+card/idCard.go:19:1: exported: comment on exported var ID_RESIDENCE_FILE_LOC should be of the form "ID_RESIDENCE_FILE_LOC ..." (revive)
+// Location of the file with residence data.
+^
+card/idCard.go:20:5: var-naming: don't use ALL_CAPS in Go names; use CamelCase (revive)
+var ID_RESIDENCE_FILE_LOC = []byte{0x0F, 0x04}
+    ^
+card/idCard.go:22:1: exported: comment on exported var ID_PHOTO_FILE_LOC should be of the form "ID_PHOTO_FILE_LOC ..." (revive)
+// Location of the the portrait. Portrait is encoded as JPEG.
+^
+card/idCard.go:25:6: var-naming: func parseIdDocumentFile should be parseIDDocumentFile (revive)
+func parseIdDocumentFile(data []byte, doc *document.IdDocument) error {
+     ^
+card/idCard.go:44:6: var-naming: func parseIdPersonalFile should be parseIDPersonalFile (revive)
+func parseIdPersonalFile(data []byte, doc *document.IdDocument) error {
+     ^
+card/idCard.go:68:6: var-naming: func parseIdResidenceFile should be parseIDResidenceFile (revive)
+func parseIdResidenceFile(data []byte, doc *document.IdDocument) error {
+     ^
+card/idCard.go:89:6: var-naming: func parseAndAssignIdPhotoFile should be parseAndAssignIDPhotoFile (revive)
+func parseAndAssignIdPhotoFile(data []byte, doc *document.IdDocument) error {
+     ^
+card/medical.go:16:1: exported: comment on exported type MedicalCard should be of the form "MedicalCard ..." (with optional leading article) (revive)
+// Represents a smart card that holds a Serbian medical insurance document.
+^
+card/medical.go:26:1: exported: comment on exported var MEDICAL_ATR_1 should be of the form "MEDICAL_ATR_1 ..." (revive)
+// Possibly the first version of the medical card. Newer version has the GEMALTO_ATR_2 for the ATR.
+^
+card/medical.go:32:1: exported: comment on exported var MEDICAL_ATR_2 should be of the form "MEDICAL_ATR_2 ..." (revive)
+// Available since March 2023?
+^
+card/medical.go:39:1: exported: comment on exported var MED_DOCUMENT_FILE_LOC should be of the form "MED_DOCUMENT_FILE_LOC ..." (revive)
+// Location of the file with document data.
+^
+card/medical.go:42:1: exported: comment on exported var MED_FIXED_PERSONAL_FILE_LOC should be of the form "MED_FIXED_PERSONAL_FILE_LOC ..." (revive)
+// Location of the file with fixed personal data.
+^
+card/medical.go:45:1: exported: comment on exported var MED_VARIABLE_PERSONAL_FILE_LOC should be of the form "MED_VARIABLE_PERSONAL_FILE_LOC ..." (revive)
+// Location of the file with variable personal data.
+^
+card/medical.go:48:1: exported: comment on exported var MED_VARIABLE_ADMIN_FILE_LOC should be of the form "MED_VARIABLE_ADMIN_FILE_LOC ..." (revive)
+// Location of the file with variable administrative data.
+^
+card/medical.go:51:1: exported: exported method MedicalCard.InitCard should have comment or be unexported (revive)
+func (card *MedicalCard) InitCard() error {
+^
+card/medical.go:67:1: exported: exported method MedicalCard.ReadCard should have comment or be unexported (revive)
+func (card *MedicalCard) ReadCard() error {
+^
+card/medical.go:93:1: exported: exported method MedicalCard.GetDocument should have comment or be unexported (revive)
+func (card *MedicalCard) GetDocument() (document.Document, error) {
+^
+card/medical.go:119:1: exported: exported method MedicalCard.Atr should have comment or be unexported (revive)
+func (card *MedicalCard) Atr() Atr {
+^
+card/medical.go:137:1: exported: exported method MedicalCard.ReadFile should have comment or be unexported (revive)
+func (card *MedicalCard) ReadFile(name []byte) ([]byte, error) {
+^
+card/medical.go:189:1: exported: comment on exported method MedicalCard.Test should be of the form "Test ..." (revive)
+// Newer medical cards share ATR with the ID cards (GEMALTO_ATR_2)
+^
+card/pin.go:8:1: exported: comment on exported function ValidatePin should be of the form "ValidatePin ..." (revive)
+// Checks if the PIN consists only of digits,
+^
+card/pin.go:25:1: exported: comment on exported function PadPin should be of the form "PadPin ..." (revive)
+// Creates a 8 byte slice containing the PIN at the beginning.
+^
+card/pin.go:38:1: exported: exported function PinTriesLeft should have comment or be unexported (revive)
+func PinTriesLeft(rsp []byte) int {
+^
+card/smartCard.go:5:6: exported: exported type VirtualCard should have comment or be unexported (revive)
+type VirtualCard struct {
+     ^
+card/smartCard.go:10:1: exported: exported function MakeVirtualCard should have comment or be unexported (revive)
+func MakeVirtualCard(atr []byte, fs map[uint32][]byte) *VirtualCard {
+^
+card/smartCard.go:19:1: exported: exported method VirtualCard.Status should have comment or be unexported (revive)
+func (card *VirtualCard) Status() (*scard.CardStatus, error) {
+^
+card/smartCard.go:24:15: unused-parameter: parameter 'cmd' seems to be unused, consider removing or renaming it as _ (revive)
+func Transmit(cmd []byte) ([]byte, error) {
+              ^
+card/state.go:9:1: exported: exported function FormatState should have comment or be unexported (revive)
+func FormatState(state scard.StateFlag) string {
+^
+card/tlv/tlv.go:10:1: exported: comment on exported function ParseTLV should be of the form "ParseTLV ..." (revive)
+// Parses simple TLV-encoded data and returns a map of tags to values.
+^
+card/tlv/tlv.go:46:1: exported: comment on exported function AssignField should be of the form "AssignField ..." (revive)
+// Assigns the value from the provided fields map to the target string, based on the specified tag.
+^
+card/tlv/tlv.go:57:1: exported: comment on exported function AssignBoolField should be of the form "AssignBoolField ..." (revive)
+// Assigns a boolean value from the provided fields map to the target, based on the specified tag.
+^
+card/unknownCard.go:9:6: exported: exported type UnknownDocumentCard should have comment or be unexported (revive)
+type UnknownDocumentCard struct {
+     ^
+card/unknownCard.go:14:1: exported: exported method UnknownDocumentCard.Atr should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) Atr() Atr {
+^
+card/unknownCard.go:18:1: exported: exported method UnknownDocumentCard.ReadFile should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) ReadFile(_ []byte) ([]byte, error) {
+^
+card/unknownCard.go:22:1: exported: exported method UnknownDocumentCard.InitCard should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) InitCard() error {
+^
+card/unknownCard.go:26:1: exported: exported method UnknownDocumentCard.ReadCard should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) ReadCard() error {
+^
+card/unknownCard.go:30:1: exported: exported method UnknownDocumentCard.GetDocument should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) GetDocument() (document.Document, error) {
+^
+card/unknownCard.go:34:1: exported: exported method UnknownDocumentCard.Test should have comment or be unexported (revive)
+func (card *UnknownDocumentCard) Test() bool {
+^
+card/vehicle.go:13:1: exported: comment on exported type VehicleCard should be of the form "VehicleCard ..." (with optional leading article) (revive)
+// Represents a smart card that contains a Serbian vehicle document.
+^
+card/vehicle.go:20:1: exported: comment on exported var VEHICLE_ATR_0 should be of the form "VEHICLE_ATR_0 ..." (revive)
+// Possibly deprecated.
+^
+card/vehicle.go:27:1: exported: comment on exported var VEHICLE_ATR_1 should be of the form "VEHICLE_ATR_1 ..." (revive)
+// Same as GEMALTO_ATR_1
+^
+card/vehicle.go:53:1: exported: comment on exported method VehicleCard.InitCard should be of the form "InitCard ..." (revive)
+// Initializes vehicle card by trying three different sets of commands.
+^
+card/vehicle.go:109:1: exported: exported method VehicleCard.ReadCard should have comment or be unexported (revive)
+func (card *VehicleCard) ReadCard() error {
+^
+card/vehicle.go:122:1: exported: exported method VehicleCard.GetDocument should have comment or be unexported (revive)
+func (card *VehicleCard) GetDocument() (document.Document, error) {
+^
+card/vehicle.go:188:1: exported: exported method VehicleCard.Atr should have comment or be unexported (revive)
+func (card *VehicleCard) Atr() Atr {
+^
+card/vehicle.go:192:1: exported: exported method VehicleCard.ReadFile should have comment or be unexported (revive)
+func (card *VehicleCard) ReadFile(name []byte) ([]byte, error) {
+^
+card/vehicle.go:232:1: exported: exported method VehicleCard.Test should have comment or be unexported (revive)
+func (card VehicleCard) Test() bool {
+^
+document/document.go:1:1: package-comments: package comment should be of the form "Package document ..." (revive)
+// Package provides type definitions fot different types of documents
+// present on smart cards, as well methods for exporting those documents to different file formats.
+// In order for `BuildPDF` methods to work properly,
+// this package must be (pre)configured with `Configure` function.
+document/document.go:7:1: exported: comment on exported type Document should be of the form "Document ..." (with optional leading article) (revive)
+// Represents any document handled by Bas Celik
+^
+document/document.go:20:6: exported: exported type DocumentConfig should have comment or be unexported (revive)
+type DocumentConfig struct {
+     ^
+document/document.go:26:1: exported: comment on exported function Configure should be of the form "Configure ..." (revive)
+// Sets fonts and graphics used for rendering PDF
+^
+document/excel.go:13:1: exported: exported function CreateExcel should have comment or be unexported (revive)
+func CreateExcel(document any) ([]byte, error) {
+^
+document/excel.go:37:3: increment-decrement: should replace currentRow += 1 with currentRow++ (revive)
+		currentRow += 1
+		^
+document/id.go:23:1: exported: comment on exported type IdDocument should be of the form "IdDocument ..." (with optional leading article) (revive)
+// Represents a document stored on a Serbian ID card.
+^
+document/id.go:24:6: var-naming: type IdDocument should be IDDocument (revive)
+type IdDocument struct {
+     ^
+document/id.go:61:1: exported: exported method IdDocument.GetFullName should have comment or be unexported (revive)
+func (doc *IdDocument) GetFullName() string {
+^
+document/id.go:65:1: exported: exported method IdDocument.GetFullAddress should have comment or be unexported (revive)
+func (doc *IdDocument) GetFullAddress(reverse bool) string {
+^
+document/id.go:87:1: exported: exported method IdDocument.GetFullPlaceOfBirth should have comment or be unexported (revive)
+func (doc *IdDocument) GetFullPlaceOfBirth() string {
+^
+document/id.go:91:1: exported: exported method IdDocument.BuildPdf should have comment or be unexported (revive)
+func (doc *IdDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+^
+document/id.go:146:24: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *IdDocument) BuildJson() ([]byte, error) {
+                       ^
+document/id.go:163:1: exported: exported method IdDocument.BuildExcel should have comment or be unexported (revive)
+func (doc *IdDocument) BuildExcel() ([]byte, string, error) {
+^
+document/idPrint.go:12:6: var-naming: type IdPdfWriter should be IDPdfWriter (revive)
+type IdPdfWriter struct {
+     ^
+document/idPrint.go:76:25: var-naming: method printRegularId should be printRegularID (revive)
+func (ipw *IdPdfWriter) printRegularId() {
+                        ^
+document/idPrint.go:200:25: var-naming: method printForeignerId should be printForeignerID (revive)
+func (ipw *IdPdfWriter) printForeignerId() {
+                        ^
+document/idPrint.go:322:1: receiver-naming: receiver name ipw should be consistent with previous receiver name idw for IdPdfWriter (revive)
+func (ipw *IdPdfWriter) printResidencePermit() {
+	ipw.pdf.SetLineType("solid")
+	ipw.pdf.SetY(59.041)
+	ipw.line(0.83)
+
+	ipw.pdf.SetXY(ipw.textLeftMargin+1.0, 64.95)
+
+	err := ipw.pdf.SetCharSpacing(-0.2)
+	if err != nil {
+		panic(err)
+	}
+	ipw.cell("ČITAČ ELEKTRONSKE LIČNE KARTE: ŠTAMPA PODATAKA")
+
+	err = ipw.pdf.SetCharSpacing(-0.1)
+	if err != nil {
+		panic(err)
+	}
+
+	ipw.pdf.SetY(79.8)
+
+	ipw.line(0)
+
+	imageY := 86.0
+	imageHeight := 159.0
+
+	err = ipw.pdf.ImageFrom(ipw.doc.Portrait, ipw.leftMargin, imageY, &gopdf.Rect{W: 119.9, H: imageHeight})
+	if err != nil {
+		panic(err)
+	}
+
+	ipw.pdf.SetLineWidth(0.48)
+	ipw.pdf.SetFillColor(255, 255, 255)
+	err = ipw.pdf.Rectangle(ipw.leftMargin, imageY, 179, imageY+imageHeight, "D", 0, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	ipw.pdf.SetFillColor(0, 0, 0)
+
+	ipw.pdf.SetY(250)
+
+	ipw.line(1.08)
+	ipw.moveY(8)
+	ipw.pdf.SetX(ipw.textLeftMargin)
+	err = ipw.pdf.SetFontSize(11.1)
+	if err != nil {
+		panic(err)
+	}
+
+	ipw.cell("Podaci o strancu")
+
+	ipw.moveY(16)
+	ipw.line(0)
+	ipw.moveY(9)
+
+	ipw.putData("Prezime:", ipw.doc.Surname)
+	ipw.putData("Ime:", ipw.doc.GivenName)
+	ipw.putData("Državljanstvo:", ipw.doc.NationalityFull)
+	ipw.putData("Datum rođenja:", ipw.doc.DateOfBirth)
+	ipw.putData("Mesto rođenja,\nopština i država:", ipw.doc.GetFullPlaceOfBirth())
+	addressLabel := "Prebivalište\ni adresa stana:"
+	if ipw.doc.AddressLabel == "prebivalište" {
+		addressLabel = "Prebivalište:"
+	}
+	ipw.putData(addressLabel, ipw.doc.GetFullAddress(true))
+	ipw.putData("Datum promene adrese:", ipw.doc.AddressDate)
+	ipw.putData("Evidencijski broj\nstranca:", ipw.doc.PersonalNumber)
+	ipw.putData("Pol:", ipw.doc.Sex)
+	ipw.putData("Osnov boravka:", ipw.doc.PurposeOfStay)
+	ipw.putData("Napomena:", ipw.doc.ENote)
+
+	ipw.moveY(-8.67)
+	ipw.line(0)
+	ipw.moveY(9)
+	ipw.cell("Podaci o dokumentu")
+	ipw.moveY(16)
+
+	ipw.line(0)
+	ipw.moveY(9)
+	ipw.putData("Naziv dokumenta:", ipw.doc.DocumentName)
+	ipw.putData("Dokument izdaje:", ipw.doc.IssuingAuthority)
+	ipw.putData("Broj dokumenta:", ipw.doc.DocRegNo)
+	ipw.putData("Datum izdavanja:", ipw.doc.IssuingDate)
+	ipw.putData("Važi do:", ipw.doc.ExpiryDate)
+
+	ipw.moveY(-8.67)
+	ipw.line(0)
+	ipw.moveY(3)
+	ipw.line(0)
+	ipw.moveY(9)
+
+	ipw.cell("Datum štampe: " + time.Now().Format("02.01.2006."))
+
+	ipw.moveY(19)
+
+	ipw.line(0.83)
+
+	err = ipw.pdf.SetFontSize(9)
+	if err != nil {
+		panic(err)
+	}
+
+	ipw.moveY(4)
+
+	ipw.pdf.SetX(ipw.leftMargin)
+
+	ipw.cell("1. U čipu dozvole za privremeni boravak i rad, podaci o imenu i prezimenu imaoca dozvole ispisani su onako")
+	ipw.pdf.SetX(ipw.leftMargin)
+	ipw.moveY(9.7)
+	ipw.cell("kako su ispisani na samom obrascu dozvole za privremeni boravak latiničnim pismom.")
+	ipw.pdf.SetX(ipw.leftMargin)
+	ipw.moveY(9.7)
+	ipw.cell("2. Ako se ime ili prezime stranca sastoji od dve ili više reči čija dužina prelazi 30 karaktera za ime,")
+	ipw.pdf.SetX(ipw.leftMargin)
+	ipw.moveY(9.7)
+	ipw.cell("odnosno 36 karaktera za prezime u čip se upisuje puno ime stranca, a na obrascu dozvole za privremeni boravak")
+	ipw.pdf.SetX(ipw.leftMargin)
+	ipw.moveY(9.7)
+	ipw.cell("se upisuje do 30 karaktera za ime, odnosno 36 karaktera za prezime.")
+
+	ipw.moveY(9.7)
+
+	ipw.line(0)
+}
+document/id_test.go:10:5: var-naming: var documentId1 should be documentID1 (revive)
+var documentId1 = document.IdDocument{}
+    ^
+document/id_test.go:11:5: var-naming: var documentId2 should be documentID2 (revive)
+var documentId2 = document.IdDocument{
+    ^
+document/id_test.go:22:5: var-naming: var documentId3 should be documentID3 (revive)
+var documentId3 = document.IdDocument{
+    ^
+document/medical.go:20:7: var-naming: const rfzoServiceUrl should be rfzoServiceURL (revive)
+const rfzoServiceUrl = "https://www.rfzo.rs/proveraUplateDoprinosa2.php"
+      ^
+document/medical.go:22:1: exported: comment on exported var ErrInvalidCardNo should be of the form "ErrInvalidCardNo ..." (revive)
+// Card number doesn't have exactly 11 digits.
+^
+document/medical.go:25:1: exported: comment on exported var ErrInvalidInsuranceNo should be of the form "ErrInvalidInsuranceNo ..." (revive)
+// Insurance number doesn't have exactly 11 digits.
+^
+document/medical.go:28:1: exported: comment on exported var ErrNoSubmatchFound should be of the form "ErrNoSubmatchFound ..." (revive)
+// Date `ValidUntil` could not be extracted from RFZO response.
+^
+document/medical.go:31:1: exported: comment on exported type MedicalDocument should be of the form "MedicalDocument ..." (with optional leading article) (revive)
+// Represents a document stored on a Serbian public medical insurance card.
+^
+document/medical.go:35:2: var-naming: struct field CardId should be CardID (revive)
+	CardId                 string
+	^
+document/medical.go:62:2: var-naming: struct field CarrierIdNumber should be CarrierIDNumber (revive)
+	CarrierIdNumber        string
+	^
+document/medical.go:72:2: var-naming: struct field TaxpayerIdNumber should be TaxpayerIDNumber (revive)
+	TaxpayerIdNumber       string
+	^
+document/medical.go:76:1: exported: exported method MedicalDocument.GetFullName should have comment or be unexported (revive)
+func (doc *MedicalDocument) GetFullName() string {
+^
+document/medical.go:80:1: exported: exported method MedicalDocument.GetFullStreetAddress should have comment or be unexported (revive)
+func (doc *MedicalDocument) GetFullStreetAddress() string {
+^
+document/medical.go:97:1: exported: exported method MedicalDocument.GetFullPlaceAddress should have comment or be unexported (revive)
+func (doc *MedicalDocument) GetFullPlaceAddress() string {
+^
+document/medical.go:101:1: exported: exported method MedicalDocument.BuildPdf should have comment or be unexported (revive)
+func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+^
+document/medical.go:262:29: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *MedicalDocument) BuildJson() ([]byte, error) {
+                            ^
+document/medical.go:266:1: exported: exported method MedicalDocument.BuildExcel should have comment or be unexported (revive)
+func (doc *MedicalDocument) BuildExcel() ([]byte, string, error) {
+^
+document/medical.go:276:1: exported: exported method MedicalDocument.UpdateValidUntilDateFromRfzo should have comment or be unexported (revive)
+func (doc *MedicalDocument) UpdateValidUntilDateFromRfzo() error {
+^
+document/medical.go:307:1: exported: exported function ParseValidUntilDateFromRfzoResponse should have comment or be unexported (revive)
+func ParseValidUntilDateFromRfzoResponse(response string) (string, error) {
+^
+document/vehicle.go:13:1: exported: comment on exported type VehicleDocument should be of the form "VehicleDocument ..." (with optional leading article) (revive)
+// Represents a document stored on a Serbian vehicle card.
+^
+document/vehicle.go:22:2: var-naming: struct field EngineIdNumber should be EngineIDNumber (revive)
+	EngineIdNumber              string
+	^
+document/vehicle.go:48:2: var-naming: struct field VehicleIdNumber should be VehicleIDNumber (revive)
+	VehicleIdNumber             string
+	^
+document/vehicle.go:56:1: exported: exported method VehicleDocument.BuildPdf should have comment or be unexported (revive)
+func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+^
+document/vehicle.go:295:29: var-naming: method BuildJson should be BuildJSON (revive)
+func (doc *VehicleDocument) BuildJson() ([]byte, error) {
+                            ^
+document/vehicle.go:299:1: exported: exported method VehicleDocument.BuildExcel should have comment or be unexported (revive)
+func (doc *VehicleDocument) BuildExcel() ([]byte, string, error) {
+^
+internal/flags.go:14:1: exported: exported function ProcessFlags should have comment or be unexported (revive)
+func ProcessFlags() (LaunchConfig, bool) {
+^
+internal/flags.go:133:1: exported: exported function SetVersion should have comment or be unexported (revive)
+func SetVersion(v string) {
+^
+internal/gui/cardReaderUI.go:78:19: var-naming: func parameter statusId should be statusID (revive)
+func setStartPage(statusId, explanationId string, err error) {
+                  ^
+internal/gui/cardReaderUI.go:107:16: var-naming: func parameter statusId should be statusID (revive)
+func setStatus(statusId string, err error) {
+               ^
+internal/gui/celiktheme/theme.go:1:1: package-comments: should have a package comment (revive)
+package celiktheme
+^
+internal/gui/celiktheme/theme.go:10:6: exported: exported type Theme should have comment or be unexported (revive)
+type Theme struct {
+     ^
+internal/gui/celiktheme/theme.go:15:1: exported: exported function NewTheme should have comment or be unexported (revive)
+func NewTheme(themeSelection int) Theme {
+^
+internal/gui/celiktheme/theme.go:27:1: exported: exported method Theme.Color should have comment or be unexported (revive)
+func (t Theme) Color(colorName fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+^
+internal/gui/celiktheme/theme.go:31:10: indent-error-flow: if block ends with a return statement, so drop this else and outdent its block (revive)
+		} else {
+			return darkTheme(colorName)
+		}
+internal/gui/celiktheme/theme.go:41:1: exported: exported method Theme.Font should have comment or be unexported (revive)
+func (Theme) Font(s fyne.TextStyle) fyne.Resource {
+^
+internal/gui/celiktheme/theme.go:45:1: exported: exported method Theme.Icon should have comment or be unexported (revive)
+func (Theme) Icon(n fyne.ThemeIconName) fyne.Resource {
+^
+internal/gui/celiktheme/theme.go:49:1: exported: exported method Theme.Size should have comment or be unexported (revive)
+func (Theme) Size(s fyne.ThemeSizeName) float32 {
+^
+internal/gui/celiktheme/theme.go:53:1: exported: exported method Theme.CornerRadius should have comment or be unexported (revive)
+func (Theme) CornerRadius() float32 {
+^
+internal/gui/crypto.go:261:6: var-naming: func closeCryptoUi should be closeCryptoUI (revive)
+func closeCryptoUi() {
+     ^
+internal/gui/document.go:116:2: var-naming: var carrierIdNumberF should be carrierIDNumberF (revive)
+	carrierIdNumberF := widgets.NewField(t("medical.personalNumber"), doc.CarrierIdNumber, 170)
+	^
+internal/gui/document.go:139:2: var-naming: var taxpayerIdNumberF should be taxpayerIDNumberF (revive)
+	taxpayerIdNumberF := widgets.NewField(t("medical.taxpayerIdNumber"), doc.TaxpayerIdNumber, 170)
+	^
+internal/gui/document.go:160:2: var-naming: var docIdF should be docIDF (revive)
+	docIdF := widgets.NewField(t("vehicle.unambiguousNumber"), doc.UnambiguousNumber, 220)
+	^
+internal/gui/icon/icon.go:11:5: exported: exported var CertificateThemedResource should have comment or be unexported (revive)
+var CertificateThemedResource *theme.ThemedResource
+    ^
+internal/gui/icon/icon.go:12:5: exported: exported var PinThemedResource should have comment or be unexported (revive)
+var PinThemedResource *theme.ThemedResource
+    ^
+internal/gui/icon/icon.go:14:1: exported: exported function LoadIcons should have comment or be unexported (revive)
+func LoadIcons(embedFS embed.FS) error {
+^
+internal/gui/pinChange.go:92:11: indent-error-flow: if block ends with a return statement, so drop this else and outdent its block (revive)
+			} else {
+				pinDialog.Hide()
+				dialog.ShowInformation(t("pinChange.title"), t("pinChange.success"), state.window)
+				logger.Info("pin changed")
+			}
+internal/gui/preferences.go:34:9: unused-parameter: parameter 's' seems to be unused, consider removing or renaming it as _ (revive)
+			func(s string) {})
+			     ^
+internal/gui/preferences.go:40:9: unused-parameter: parameter 's' seems to be unused, consider removing or renaming it as _ (revive)
+			func(s string) {},
+			     ^
+internal/gui/reader/linux.go:3:1: package-comments: should have a package comment (revive)
+package reader
+^
+internal/gui/reader/poller.go:16:6: exported: exported type ReaderPoller should have comment or be unexported (revive)
+type ReaderPoller struct {
+     ^
+internal/gui/reader/poller.go:26:6: exported: exported type ReaderLister should have comment or be unexported (revive)
+type ReaderLister interface {
+     ^
+internal/gui/reader/poller.go:31:1: exported: exported function NewPoller should have comment or be unexported (revive)
+func NewPoller(readerLister ReaderLister, onCardEvent func(string, *scard.Context)) (*ReaderPoller, error) {
+^
+internal/gui/reader/poller.go:61:1: exported: exported method ReaderPoller.StartPoller should have comment or be unexported (revive)
+func (rp *ReaderPoller) StartPoller() {
+^
+internal/gui/reader/poller.go:106:1: exported: exported method ReaderPoller.SetReader should have comment or be unexported (revive)
+func (rp *ReaderPoller) SetReader(newReader string) {
+^
+internal/gui/reader/poller.go:151:1: exported: exported function CancelReaderPoler should have comment or be unexported (revive)
+func CancelReaderPoler() {
+^
+internal/gui/reader/poller.go:159:1: exported: exported function RestartReaderPoler should have comment or be unexported (revive)
+func RestartReaderPoler() {
+^
+internal/gui/translation/translation.go:15:1: exported: exported function SetTranslations should have comment or be unexported (revive)
+func SetTranslations(embedFS embed.FS) error {
+^
+internal/gui/translation/translation.go:20:3: var-naming: var langJson should be langJSON (revive)
+		langJson, err := embedFS.ReadFile("embed/translation/" + string(lang) + ".json")
+		^
+internal/gui/translation/translation.go:38:1: exported: exported function SetLanguage should have comment or be unexported (revive)
+func SetLanguage(lang int) {
+^
+internal/gui/translation/translation.go:48:1: exported: exported function CurrentLanguage should have comment or be unexported (revive)
+func CurrentLanguage() localization.Language {
+^
+internal/gui/translation/translation.go:52:1: exported: exported function Translate should have comment or be unexported (revive)
+func Translate(id string, vals ...any) string {
+^
+internal/gui/translation/translation.go:57:9: indent-error-flow: if block ends with a return statement, so drop this else and outdent its block (revive)
+	} else {
+		return fmt.Sprintf(translation, vals...)
+	}
+internal/gui/translation/translation.go:62:1: exported: exported function EnglishTranslation should have comment or be unexported (revive)
+func EnglishTranslation(id string) string {
+^
+internal/gui/ui.go:18:6: exported: exported type State should have comment or be unexported (revive)
+type State struct {
+     ^
+internal/gui/ui.go:24:2: var-naming: struct field documentUi should be documentUI (revive)
+	documentUi              *fyne.Container
+	^
+internal/gui/ui.go:25:2: var-naming: struct field cryptoUiContainer should be cryptoUIContainer (revive)
+	cryptoUiContainer       *fyne.Container
+	^
+internal/gui/ui.go:26:2: var-naming: struct field cryptoUi should be cryptoUI (revive)
+	cryptoUi                *fyne.Container
+	^
+internal/gui/ui.go:28:2: var-naming: struct field documentUiMainContainer should be documentUIMainContainer (revive)
+	documentUiMainContainer *fyne.Container
+	^
+internal/gui/ui.go:39:1: exported: exported function StartGui should have comment or be unexported (revive)
+func StartGui(version string) {
+^
+internal/gui/widgets/clipboard.go:5:1: exported: exported function SetClipboard should have comment or be unexported (revive)
+func SetClipboard(hook func(string) bool) {
+^
+internal/gui/widgets/field.go:13:6: exported: exported type Field should have comment or be unexported (revive)
+type Field struct {
+     ^
+internal/gui/widgets/field.go:22:6: exported: exported type FieldRenderer should have comment or be unexported (revive)
+type FieldRenderer struct {
+     ^
+internal/gui/widgets/field.go:29:1: exported: exported function NewField should have comment or be unexported (revive)
+func NewField(name, value string, minWidth float32) *Field {
+^
+internal/gui/widgets/field.go:39:1: exported: exported method Field.CreateRenderer should have comment or be unexported (revive)
+func (f *Field) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/field.go:59:1: exported: exported method Field.Cursor should have comment or be unexported (revive)
+func (f *Field) Cursor() desktop.Cursor {
+^
+internal/gui/widgets/field.go:63:1: exported: exported method Field.MouseIn should have comment or be unexported (revive)
+func (f *Field) MouseIn(*desktop.MouseEvent) {
+^
+internal/gui/widgets/field.go:69:1: exported: exported method Field.MouseMoved should have comment or be unexported (revive)
+func (f *Field) MouseMoved(*desktop.MouseEvent) {
+^
+internal/gui/widgets/field.go:72:1: exported: exported method Field.MouseOut should have comment or be unexported (revive)
+func (f *Field) MouseOut() {
+^
+internal/gui/widgets/field.go:77:1: exported: exported method Field.Tapped should have comment or be unexported (revive)
+func (f *Field) Tapped(*fyne.PointEvent) {
+^
+internal/gui/widgets/field.go:84:1: exported: exported method Field.SetValue should have comment or be unexported (revive)
+func (f *Field) SetValue(value string) {
+^
+internal/gui/widgets/field.go:90:1: exported: exported method FieldRenderer.Refresh should have comment or be unexported (revive)
+func (r *FieldRenderer) Refresh() {
+^
+internal/gui/widgets/field.go:106:1: exported: exported method FieldRenderer.Layout should have comment or be unexported (revive)
+func (r *FieldRenderer) Layout(s fyne.Size) {
+^
+internal/gui/widgets/field.go:113:1: exported: exported method FieldRenderer.MinSize should have comment or be unexported (revive)
+func (r *FieldRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/field.go:117:1: exported: exported method FieldRenderer.Objects should have comment or be unexported (revive)
+func (r *FieldRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/field.go:121:1: exported: exported method FieldRenderer.Destroy should have comment or be unexported (revive)
+func (r *FieldRenderer) Destroy() {}
+^
+internal/gui/widgets/group.go:12:6: exported: exported type Group should have comment or be unexported (revive)
+type Group struct {
+     ^
+internal/gui/widgets/group.go:18:6: exported: exported type GroupRenderer should have comment or be unexported (revive)
+type GroupRenderer struct {
+     ^
+internal/gui/widgets/group.go:24:1: exported: exported function NewGroup should have comment or be unexported (revive)
+func NewGroup(name string, objects ...fyne.CanvasObject) *Group {
+^
+internal/gui/widgets/group.go:33:1: exported: exported method Group.CreateRenderer should have comment or be unexported (revive)
+func (g *Group) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/group.go:50:1: exported: exported method GroupRenderer.Refresh should have comment or be unexported (revive)
+func (r *GroupRenderer) Refresh() {
+^
+internal/gui/widgets/group.go:55:1: exported: exported method GroupRenderer.Layout should have comment or be unexported (revive)
+func (r *GroupRenderer) Layout(s fyne.Size) {
+^
+internal/gui/widgets/group.go:60:1: exported: exported method GroupRenderer.MinSize should have comment or be unexported (revive)
+func (r *GroupRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/group.go:64:1: exported: exported method GroupRenderer.Objects should have comment or be unexported (revive)
+func (r *GroupRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/group.go:68:1: exported: exported method GroupRenderer.Destroy should have comment or be unexported (revive)
+func (r *GroupRenderer) Destroy() {}
+^
+internal/gui/widgets/spacer.go:9:6: exported: exported type Spacer should have comment or be unexported (revive)
+type Spacer struct {
+     ^
+internal/gui/widgets/spacer.go:14:6: exported: exported type SpacerRenderer should have comment or be unexported (revive)
+type SpacerRenderer struct {
+     ^
+internal/gui/widgets/spacer.go:18:1: exported: exported function NewSpacer should have comment or be unexported (revive)
+func NewSpacer() *Spacer {
+^
+internal/gui/widgets/spacer.go:24:1: exported: exported method Spacer.SetMinWidth should have comment or be unexported (revive)
+func (s *Spacer) SetMinWidth(width float32) {
+^
+internal/gui/widgets/spacer.go:32:1: exported: exported method Spacer.CreateRenderer should have comment or be unexported (revive)
+func (s *Spacer) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/spacer.go:38:1: exported: exported method SpacerRenderer.Refresh should have comment or be unexported (revive)
+func (r *SpacerRenderer) Refresh() {}
+^
+internal/gui/widgets/spacer.go:40:33: unused-parameter: parameter 's' seems to be unused, consider removing or renaming it as _ (revive)
+func (r *SpacerRenderer) Layout(s fyne.Size) {}
+                                ^
+internal/gui/widgets/spacer.go:42:1: exported: exported method SpacerRenderer.MinSize should have comment or be unexported (revive)
+func (r *SpacerRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/spacer.go:52:1: exported: exported method SpacerRenderer.Objects should have comment or be unexported (revive)
+func (r *SpacerRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/spacer.go:56:1: exported: exported method SpacerRenderer.Destroy should have comment or be unexported (revive)
+func (r *SpacerRenderer) Destroy() {}
+^
+internal/gui/widgets/startPage.go:12:6: exported: exported type StartPage should have comment or be unexported (revive)
+type StartPage struct {
+     ^
+internal/gui/widgets/startPage.go:19:6: exported: exported type StartPageRenderer should have comment or be unexported (revive)
+type StartPageRenderer struct {
+     ^
+internal/gui/widgets/startPage.go:26:1: exported: exported function NewStartPage should have comment or be unexported (revive)
+func NewStartPage() *StartPage {
+^
+internal/gui/widgets/startPage.go:36:1: exported: exported method StartPage.SetStatus should have comment or be unexported (revive)
+func (sb *StartPage) SetStatus(status, explanation string, err bool) {
+^
+internal/gui/widgets/startPage.go:42:1: exported: exported method StartPage.CreateRenderer should have comment or be unexported (revive)
+func (sb *StartPage) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/startPage.go:62:1: exported: exported method StartPageRenderer.Refresh should have comment or be unexported (revive)
+func (r *StartPageRenderer) Refresh() {
+^
+internal/gui/widgets/startPage.go:76:1: exported: exported method StartPageRenderer.Layout should have comment or be unexported (revive)
+func (r *StartPageRenderer) Layout(s fyne.Size) {
+^
+internal/gui/widgets/startPage.go:80:1: exported: exported method StartPageRenderer.MinSize should have comment or be unexported (revive)
+func (r *StartPageRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/startPage.go:84:1: exported: exported method StartPageRenderer.Objects should have comment or be unexported (revive)
+func (r *StartPageRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/startPage.go:88:1: exported: exported method StartPageRenderer.Destroy should have comment or be unexported (revive)
+func (r *StartPageRenderer) Destroy() {}
+^
+internal/gui/widgets/statusBar.go:10:6: exported: exported type StatusBar should have comment or be unexported (revive)
+type StatusBar struct {
+     ^
+internal/gui/widgets/statusBar.go:16:6: exported: exported type StatusBarRenderer should have comment or be unexported (revive)
+type StatusBarRenderer struct {
+     ^
+internal/gui/widgets/statusBar.go:21:1: exported: exported function NewStatusBar should have comment or be unexported (revive)
+func NewStatusBar() *StatusBar {
+^
+internal/gui/widgets/statusBar.go:30:1: exported: exported method StatusBar.SetStatus should have comment or be unexported (revive)
+func (sb *StatusBar) SetStatus(status string, err bool) {
+^
+internal/gui/widgets/statusBar.go:35:1: exported: exported method StatusBar.GetStatus should have comment or be unexported (revive)
+func (sb *StatusBar) GetStatus() string {
+^
+internal/gui/widgets/statusBar.go:39:1: exported: exported method StatusBar.CreateRenderer should have comment or be unexported (revive)
+func (sb *StatusBar) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/statusBar.go:50:1: exported: exported method StatusBarRenderer.Refresh should have comment or be unexported (revive)
+func (r *StatusBarRenderer) Refresh() {
+^
+internal/gui/widgets/statusBar.go:66:1: exported: exported method StatusBarRenderer.MinSize should have comment or be unexported (revive)
+func (r *StatusBarRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/statusBar.go:71:1: exported: exported method StatusBarRenderer.Objects should have comment or be unexported (revive)
+func (r *StatusBarRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/statusBar.go:75:1: exported: exported method StatusBarRenderer.Destroy should have comment or be unexported (revive)
+func (r *StatusBarRenderer) Destroy() {}
+^
+internal/gui/widgets/toolbar.go:12:6: exported: exported type Toolbar should have comment or be unexported (revive)
+type Toolbar struct {
+     ^
+internal/gui/widgets/toolbar.go:22:6: exported: exported type ToolbarRenderer should have comment or be unexported (revive)
+type ToolbarRenderer struct {
+     ^
+internal/gui/widgets/toolbar.go:31:1: exported: exported function NewToolbar should have comment or be unexported (revive)
+func NewToolbar(onOpenAbout, onOpenPreferences func(), showReaders bool) *Toolbar {
+^
+internal/gui/widgets/toolbar.go:43:1: exported: exported method Toolbar.HookReaderChange should have comment or be unexported (revive)
+func (t *Toolbar) HookReaderChange(hook func(string)) {
+^
+internal/gui/widgets/toolbar.go:47:1: exported: exported method Toolbar.CreateRenderer should have comment or be unexported (revive)
+func (t *Toolbar) CreateRenderer() fyne.WidgetRenderer {
+^
+internal/gui/widgets/toolbar.go:81:1: exported: exported method ToolbarRenderer.Refresh should have comment or be unexported (revive)
+func (r *ToolbarRenderer) Refresh() {
+^
+internal/gui/widgets/toolbar.go:98:1: exported: exported method ToolbarRenderer.Layout should have comment or be unexported (revive)
+func (r *ToolbarRenderer) Layout(s fyne.Size) {
+^
+internal/gui/widgets/toolbar.go:110:1: exported: exported method ToolbarRenderer.MinSize should have comment or be unexported (revive)
+func (r *ToolbarRenderer) MinSize() fyne.Size {
+^
+internal/gui/widgets/toolbar.go:114:1: exported: exported method ToolbarRenderer.Objects should have comment or be unexported (revive)
+func (r *ToolbarRenderer) Objects() []fyne.CanvasObject {
+^
+internal/gui/widgets/toolbar.go:124:1: exported: exported method ToolbarRenderer.Destroy should have comment or be unexported (revive)
+func (r *ToolbarRenderer) Destroy() {}
+^
+internal/gui/widgets/toolbar.go:126:1: receiver-naming: receiver name r should be consistent with previous receiver name t for Toolbar (revive)
+func (r *Toolbar) SetReaders(readers []string, selectedReader string) {
+	r.readers = make([]string, len(readers))
+	copy(r.readers, readers)
+
+	r.selectedReader = selectedReader
+
+	r.Refresh()
+}
+internal/logger/log.go:1:1: package-comments: should have a package comment (revive)
+package logger
+^
+internal/logger/log.go:12:1: exported: exported function DisableLog should have comment or be unexported (revive)
+func DisableLog() {
+^
+internal/logger/log.go:16:1: exported: exported function Error should have comment or be unexported (revive)
+func Error(err error) {
+^
+internal/logger/log.go:20:1: exported: exported function Info should have comment or be unexported (revive)
+func Info(message string) {
+^
+internal/logger/log.go:24:1: exported: exported function Debug should have comment or be unexported (revive)
+func Debug(message string) {
+^
+internal/read.go:14:6: exported: exported type LaunchConfig should have comment or be unexported (revive)
+type LaunchConfig struct {
+     ^
+internal/read.go:16:2: var-naming: struct field JsonPath should be JSONPath (revive)
+	JsonPath              string
+	^
+internal/runGUI.go:12:1: exported: exported function Run should have comment or be unexported (revive)
+func Run(cfg LaunchConfig) error {
+^
+internal/smartbox/pkcs11/externalModule.go:12:6: exported: exported type NamedCert should have comment or be unexported (revive)
+type NamedCert struct {
+     ^
+internal/smartbox/pkcs11/externalModule.go:13:2: var-naming: struct field Id should be ID (revive)
+	Id          []byte
+	^
+internal/smartbox/pkcs11/externalModule.go:17:1: exported: comment on exported type PkcsModuleSession should be of the form "PkcsModuleSession ..." (with optional leading article) (revive)
+// wrapper around pkcs11.SessionHandle
+^
+internal/smartbox/pkcs11/externalModule.go:38:1: exported: exported function NewPkcsExternalModule should have comment or be unexported (revive)
+func NewPkcsExternalModule(modulePath string) (PkcsModuleSession, error) {
+^
+internal/smartbox/pkcs11/externalModule.go:51:2: increment-decrement: should replace mc.refCount += 1 with mc.refCount++ (revive)
+	mc.refCount += 1
+	^
+internal/smartbox/pkcs11/externalModule.go:57:1: exported: exported method PkcsModuleSession.ListSlots should have comment or be unexported (revive)
+func (pm *PkcsModuleSession) ListSlots() ([]uint, []string, error) {
+^
+internal/smartbox/pkcs11/externalModule.go:63:2: var-naming: var slotIds should be slotIDs (revive)
+	slotIds := make([]uint, 0, len(slots))
+	^
+internal/smartbox/pkcs11/externalModule.go:86:62: var-naming: method parameter slotId should be slotID (revive)
+func (pm *PkcsModuleSession) OpenSessionAndLogin(pin string, slotId int) error {
+                                                             ^
+internal/smartbox/pkcs11/externalModule.go:151:1: exported: exported method PkcsModuleSession.GetCertificates should have comment or be unexported (revive)
+func (pm *PkcsModuleSession) GetCertificates() ([]NamedCert, error) {
+^
+internal/smartbox/pkcs11/externalModule.go:176:1: exported: exported method PkcsModuleSession.CloseSession should have comment or be unexported (revive)
+func (pm *PkcsModuleSession) CloseSession() error {
+^
+internal/smartbox/pkcs11/externalModule.go:198:35: var-naming: method parameter certId should be certID (revive)
+func (pm *PkcsModuleSession) Sign(certId []byte, message []byte) ([]byte, error) {
+                                  ^
+internal/smartbox/pkcs11/vendor.go:3:6: exported: exported type CardVendor should have comment or be unexported (revive)
+type CardVendor int
+     ^
+internal/smartbox/pkcs11/vendor.go:6:2: exported: exported const CardVendorHalcom should have comment (or a comment on this block) or be unexported (revive)
+	CardVendorHalcom = CardVendor(iota)
+	^
+internal/smartbox/pkcs11/vendor.go:30:1: exported: exported function GetDefaultPath should have comment or be unexported (revive)
+func GetDefaultPath(cv CardVendor, os string) string {
+^
+internal/smartbox/server/getCertificates.go:13:6: exported: exported type GetCertificatesInput should have comment or be unexported (revive)
+type GetCertificatesInput struct {
+     ^
+internal/smartbox/server/getCertificates.go:14:2: var-naming: struct field TerminalId should be TerminalID (revive)
+	TerminalId int    `json:"terminalId"`
+	^
+internal/smartbox/server/getCertificates.go:18:6: exported: exported type GetCertificatesPayload should have comment or be unexported (revive)
+type GetCertificatesPayload struct {
+     ^
+internal/smartbox/server/getCertificates.go:22:6: exported: exported type CertificateAlias should have comment or be unexported (revive)
+type CertificateAlias struct {
+     ^
+internal/smartbox/server/getCertificates.go:57:1: exported: exported function GetValidCertificates should have comment or be unexported (revive)
+func GetValidCertificates(namedCerts []pkcs11.NamedCert) []pkcs11.NamedCert {
+^
+internal/smartbox/server/getCertificates.go:76:1: exported: exported function GetCertificateAliases should have comment or be unexported (revive)
+func GetCertificateAliases(namedCerts []pkcs11.NamedCert) []CertificateAlias {
+^
+internal/smartbox/server/getInfo.go:9:6: exported: exported type GetInfoInput should have comment or be unexported (revive)
+type GetInfoInput struct {
+     ^
+internal/smartbox/server/getInfo.go:15:6: exported: exported type GetInfoPayload should have comment or be unexported (revive)
+type GetInfoPayload struct {
+     ^
+internal/smartbox/server/getInfo.go:16:2: var-naming: struct field TerminalId should be TerminalID (revive)
+	TerminalId    int    `json:"terminalId"`
+	^
+internal/smartbox/server/getInfo.go:17:2: var-naming: struct field ProviderId should be ProviderID (revive)
+	ProviderId    int    `json:"providerId"`
+	^
+internal/smartbox/server/getInfo.go:18:2: var-naming: struct field CertificateId should be CertificateID (revive)
+	CertificateId string `json:"certificateId"`
+	^
+internal/smartbox/server/getInfo.go:21:40: var-naming: method parameter sessionId should be sessionID (revive)
+func (s *SmartBoxServer) handleGetInfo(sessionId *string, data []byte, w io.Writer) error {
+                                       ^
+internal/smartbox/server/getProviders.go:8:6: exported: exported type GetProvidersInput should have comment or be unexported (revive)
+type GetProvidersInput struct{}
+     ^
+internal/smartbox/server/getProviders.go:10:6: exported: exported type GetProvidersPayload should have comment or be unexported (revive)
+type GetProvidersPayload struct {
+     ^
+internal/smartbox/server/getProviders.go:14:6: exported: exported type Provider should have comment or be unexported (revive)
+type Provider struct {
+     ^
+internal/smartbox/server/getProviders.go:15:2: var-naming: struct field Id should be ID (revive)
+	Id   int    `json:"id"`
+	^
+internal/smartbox/server/getSignedXml.go:20:6: var-naming: type GetSignedXmlInput should be GetSignedXMLInput (revive)
+type GetSignedXmlInput struct {
+     ^
+internal/smartbox/server/getSignedXml.go:23:2: var-naming: struct field Xml should be XML (revive)
+	Xml         string           `json:"xml"`
+	^
+internal/smartbox/server/getSignedXml.go:26:6: var-naming: type GetSignedXmlPayload should be GetSignedXMLPayload (revive)
+type GetSignedXmlPayload struct {
+     ^
+internal/smartbox/server/getSignedXml.go:27:2: var-naming: struct field Xml should be XML (revive)
+	Xml string `json:"xml"`
+	^
+internal/smartbox/server/getSignedXml.go:71:3: var-naming: struct field Uri should be URI (revive)
+		Uri        string `xml:"URI,attr"`
+		^
+internal/smartbox/server/getSignedXml.go:84:26: var-naming: method handleGetSignedXml should be handleGetSignedXML (revive)
+func (s *SmartBoxServer) handleGetSignedXml(session *SmartboxSession, data []byte, w io.Writer) error {
+                         ^
+internal/smartbox/server/getSignedXml.go:94:2: var-naming: var certId should be certID (revive)
+	certId, err := hex.DecodeString(msg.Input.Certificate.Alias)
+	^
+internal/smartbox/server/getTerminals.go:12:6: exported: exported type GetTerminalsInput should have comment or be unexported (revive)
+type GetTerminalsInput struct {
+     ^
+internal/smartbox/server/getTerminals.go:13:2: var-naming: struct field ProviderId should be ProviderID (revive)
+	ProviderId stringOrInt `json:"providerId"`
+	^
+internal/smartbox/server/getTerminals.go:16:6: exported: exported type GetTerminalsPayload should have comment or be unexported (revive)
+type GetTerminalsPayload struct {
+     ^
+internal/smartbox/server/getTerminals.go:20:6: exported: exported type Terminal should have comment or be unexported (revive)
+type Terminal struct {
+     ^
+internal/smartbox/server/getTerminals.go:21:2: var-naming: struct field Id should be ID (revive)
+	Id   string `json:"id"`
+	^
+internal/smartbox/server/getTerminals.go:53:2: var-naming: var slotIds should be slotIDs (revive)
+	slotIds, slotNames, err := module.ListSlots()
+	^
+internal/smartbox/server/server.go:14:6: exported: exported type Message should have comment or be unexported (revive)
+type Message[I any] struct {
+     ^
+internal/smartbox/server/server.go:19:6: exported: exported type Response should have comment or be unexported (revive)
+type Response[P any] struct {
+     ^
+internal/smartbox/server/server.go:25:6: exported: exported type OnOpenPayload should have comment or be unexported (revive)
+type OnOpenPayload struct {
+     ^
+internal/smartbox/server/server.go:39:5: var-naming: var operationGetSignedXml should be operationGetSignedXML (revive)
+var operationGetSignedXml = "GET_SIGNED_XML"
+    ^
+internal/smartbox/server/server.go:41:6: exported: exported type SmartBoxServer should have comment or be unexported (revive)
+type SmartBoxServer struct {
+     ^
+internal/smartbox/server/server.go:82:2: var-naming: var sessionId should be sessionID (revive)
+	sessionId := ""
+	^
+internal/smartbox/server/server.go:95:36: var-naming: method parameter sessionId should be sessionID (revive)
+func (s *SmartBoxServer) onMessage(sessionId *string, ctx context.Context, conn *websocket.Conn) error {
+                                   ^
+internal/smartbox/server/session.go:9:6: exported: exported type PkcsModuleSession should have comment or be unexported (revive)
+type PkcsModuleSession interface {
+     ^
+internal/smartbox/server/session.go:13:7: var-naming: interface method parameter certId should be certID (revive)
+	Sign(certId []byte, message []byte) ([]byte, error)
+	     ^
+internal/smartbox/server/session.go:17:6: exported: exported type SmartboxSession should have comment or be unexported (revive)
+type SmartboxSession struct {
+     ^
+internal/smartbox/server/session.go:20:2: var-naming: struct field terminalId should be terminalID (revive)
+	terminalId    int
+	^
+internal/smartbox/server/session.go:22:2: var-naming: struct field certificateId should be certificateID (revive)
+	certificateId string
+	^
+internal/smartbox/server/session.go:25:6: exported: exported type ModulePath should have comment or be unexported (revive)
+type ModulePath struct {
+     ^
+internal/smartbox/server/start.go:12:1: exported: exported function StartServer should have comment or be unexported (revive)
+func StartServer(modulePaths []ModulePath) (string, error) {
+^
+localization/format.go:5:1: exported: exported function FormatYesNo should have comment or be unexported (revive)
+func FormatYesNo(a bool, script Language) string {
+^
+localization/format.go:27:1: exported: comment on exported function FormatDate should be of the form "FormatDate ..." (revive)
+// Expects a pointer to a date in the format DDMMYYYY.
+^
+localization/format.go:41:1: exported: comment on exported function FormatDateYMD should be of the form "FormatDateYMD ..." (revive)
+// Expects a pointer to a date in the format YYYYMMDD.
+^
+localization/format.go:51:1: exported: comment on exported function JoinWithComma should be of the form "JoinWithComma ..." (revive)
+// Joins list of strings into a single string
+^
+localization/language.go:3:6: exported: exported type Language should have comment or be unexported (revive)
+type Language string
+     ^
+localization/language.go:5:7: exported: exported const SrLatin should have comment or be unexported (revive)
+const SrLatin = Language("sr-latin")
+      ^
+localization/language.go:6:7: exported: exported const SrCyrillic should have comment or be unexported (revive)
+const SrCyrillic = Language("sr-cyrillic")
+      ^
+localization/language.go:7:7: exported: exported const En should have comment or be unexported (revive)
+const En = Language("en")
+      ^
+localization/scripts.go:13:1: exported: exported function CyrillicToLatin should have comment or be unexported (revive)
+func CyrillicToLatin(str string) string {
+^
+card/ber/ber.go:266:2: QF1007: could merge conditional assignment into variable declaration (staticcheck)
+	primitive := true
+	^
+document/id.go:126:2: QF1003: could use tagged switch on doc.DocumentType (staticcheck)
+	if doc.DocumentType == ID_TYPE_APOLLO || doc.DocumentType == ID_TYPE_ID {
+	^
+internal/gui/cardReaderUI.go:85:2: QF1007: could merge conditional assignment into variable declaration (staticcheck)
+	isError := false
+	^
+internal/gui/cardReaderUI.go:108:2: QF1007: could merge conditional assignment into variable declaration (staticcheck)
+	isError := false
+	^
+internal/gui/document.go:37:2: QF1003: could use tagged switch on doc.DocumentType (staticcheck)
+	if doc.DocumentType == document.ID_TYPE_IDENTITY_FOREIGNER {
+	^
+internal/gui/translation/translation.go:39:2: QF1003: could use tagged switch on lang (staticcheck)
+	if lang == 2 {
+	^
+localization/format.go:6:2: QF1003: could use tagged switch on script (staticcheck)
+	if script == SrLatin {
+	^
+card/atr_test.go:61:2: unnecessary trailing newline (whitespace)
+	}
+	^
+card/vehicle_test.go:65:1: unnecessary trailing newline (whitespace)
+}
+^
+document/medical_test.go:142:1: unnecessary trailing newline (whitespace)
+}
+^
+document/vehicle.go:131:37: unnecessary leading newline (whitespace)
+	putParagraph := func(data string) {
+	                                   ^
+internal/gui/smartbox.go:58:63: unnecessary leading newline (whitespace)
+func getVendorPreferenceKey(vendor pkcs11.CardVendor) string {
+                                                              ^
+370 issues:
+* errcheck: 27
+* gosec: 9
+* revive: 322
+* staticcheck: 7
+* whitespace: 5
