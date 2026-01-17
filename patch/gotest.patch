@@ -1,0 +1,13 @@
+diff --git a/card/state.go b/card/state.go
+index d6b64a1..4f24c8e 100644
+--- a/card/state.go
++++ b/card/state.go
+@@ -10,7 +10,7 @@ import (
+ func FormatState(state scard.StateFlag) string {
+ 	states := []string{}
+ 
+-	if state&scard.StateUnaware != 0 {
++	if state==0 && state&scard.StateUnaware == 0 {
+ 		states = append(states, "StateUnaware")
+ 	}
+ 	if state&scard.StateIgnore != 0 {

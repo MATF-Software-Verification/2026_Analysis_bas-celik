@@ -1,0 +1,22 @@
+?   	github.com/ubavic/bas-celik/v2	[no test files]
+--- FAIL: TestFormatState (0.00s)
+    state_test.go:29: FormatState(0) = ""; want "StateUnaware"
+FAIL
+FAIL	github.com/ubavic/bas-celik/v2/card	0.022s
+ok  	github.com/ubavic/bas-celik/v2/card/ber	(cached)
+?   	github.com/ubavic/bas-celik/v2/card/cardErrors	[no test files]
+ok  	github.com/ubavic/bas-celik/v2/card/tlv	(cached)
+ok  	github.com/ubavic/bas-celik/v2/document	(cached)
+?   	github.com/ubavic/bas-celik/v2/internal	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui/celiktheme	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui/icon	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui/reader	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui/translation	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/gui/widgets	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/logger	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11	[no test files]
+?   	github.com/ubavic/bas-celik/v2/internal/smartbox/server	[no test files]
+ok  	github.com/ubavic/bas-celik/v2/localization	(cached)
+?   	github.com/ubavic/bas-celik/v2/test_helpers	[no test files]
+FAIL

@@ -1,0 +1,426 @@
+	github.com/ubavic/bas-celik/v2		coverage: 0.0% of statements
+=== RUN   Test_buildAPDU
+=== RUN   Test_buildAPDU/Case_0
+=== RUN   Test_buildAPDU/Case_1
+=== RUN   Test_buildAPDU/Case_2
+=== RUN   Test_buildAPDU/Case_3
+=== RUN   Test_buildAPDU/Case_4
+=== RUN   Test_buildAPDU/Case_5
+=== RUN   Test_buildAPDU/Case_6
+=== RUN   Test_buildAPDU/Case_7
+=== RUN   Test_buildAPDU/Case_8
+=== RUN   Test_buildAPDU/Case_9
+--- PASS: Test_buildAPDU (0.00s)
+    --- PASS: Test_buildAPDU/Case_0 (0.00s)
+    --- PASS: Test_buildAPDU/Case_1 (0.00s)
+    --- PASS: Test_buildAPDU/Case_2 (0.00s)
+    --- PASS: Test_buildAPDU/Case_3 (0.00s)
+    --- PASS: Test_buildAPDU/Case_4 (0.00s)
+    --- PASS: Test_buildAPDU/Case_5 (0.00s)
+    --- PASS: Test_buildAPDU/Case_6 (0.00s)
+    --- PASS: Test_buildAPDU/Case_7 (0.00s)
+    --- PASS: Test_buildAPDU/Case_8 (0.00s)
+    --- PASS: Test_buildAPDU/Case_9 (0.00s)
+=== RUN   Test_InitCard
+--- PASS: Test_InitCard (0.00s)
+=== RUN   TestApolloReadCard
+=== RUN   TestApolloReadCard/success
+=== RUN   TestApolloReadCard/document_select_error
+=== RUN   TestApolloReadCard/document_bad_status
+=== RUN   TestApolloReadCard/personal_short_header
+=== RUN   TestApolloReadCard/photo_read_error
+--- PASS: TestApolloReadCard (0.00s)
+    --- PASS: TestApolloReadCard/success (0.00s)
+    --- PASS: TestApolloReadCard/document_select_error (0.00s)
+    --- PASS: TestApolloReadCard/document_bad_status (0.00s)
+    --- PASS: TestApolloReadCard/personal_short_header (0.00s)
+    --- PASS: TestApolloReadCard/photo_read_error (0.00s)
+=== RUN   TestApolloSelectFile
+=== RUN   TestApolloSelectFile/success
+=== RUN   TestApolloSelectFile/transmit_error
+=== RUN   TestApolloSelectFile/bad_status
+--- PASS: TestApolloSelectFile (0.00s)
+    --- PASS: TestApolloSelectFile/success (0.00s)
+    --- PASS: TestApolloSelectFile/transmit_error (0.00s)
+    --- PASS: TestApolloSelectFile/bad_status (0.00s)
+=== RUN   TestApolloReadFile
+=== RUN   TestApolloReadFile/success
+=== RUN   TestApolloReadFile/select_error
+=== RUN   TestApolloReadFile/short_header
+=== RUN   TestApolloReadFile/read_data_error
+=== RUN   TestApolloReadFile/empty_chunk_stops
+--- PASS: TestApolloReadFile (0.00s)
+    --- PASS: TestApolloReadFile/success (0.00s)
+    --- PASS: TestApolloReadFile/select_error (0.00s)
+    --- PASS: TestApolloReadFile/short_header (0.00s)
+    --- PASS: TestApolloReadFile/read_data_error (0.00s)
+    --- PASS: TestApolloReadFile/empty_chunk_stops (0.00s)
+=== RUN   TestApolloAtr
+--- PASS: TestApolloAtr (0.00s)
+=== RUN   TestApolloGetDocumentError
+--- PASS: TestApolloGetDocumentError (0.00s)
+=== RUN   TestApolloTest
+--- PASS: TestApolloTest (0.00s)
+=== RUN   Test_responseOK
+=== RUN   Test_responseOK/Case_0
+=== RUN   Test_responseOK/Case_1
+=== RUN   Test_responseOK/Case_2
+=== RUN   Test_responseOK/Case_3
+=== RUN   Test_responseOK/Case_4
+--- PASS: Test_responseOK (0.00s)
+    --- PASS: Test_responseOK/Case_0 (0.00s)
+    --- PASS: Test_responseOK/Case_1 (0.00s)
+    --- PASS: Test_responseOK/Case_2 (0.00s)
+    --- PASS: Test_responseOK/Case_3 (0.00s)
+    --- PASS: Test_responseOK/Case_4 (0.00s)
+=== RUN   Test_read
+=== RUN   Test_read/success
+=== RUN   Test_read/transmit_error
+=== RUN   Test_read/short_response
+=== RUN   Test_read/length_capped_to_0xFF
+--- PASS: Test_read (0.00s)
+    --- PASS: Test_read/success (0.00s)
+    --- PASS: Test_read/transmit_error (0.00s)
+    --- PASS: Test_read/short_response (0.00s)
+    --- PASS: Test_read/length_capped_to_0xFF (0.00s)
+=== RUN   Test_trim4b
+--- PASS: Test_trim4b (0.00s)
+=== RUN   Test_DetectCardDocument
+=== RUN   Test_DetectCardDocument/apollo
+=== RUN   Test_DetectCardDocument/gemalto
+=== RUN   Test_DetectCardDocument/vehicle
+=== RUN   Test_DetectCardDocument/status_error
+=== RUN   Test_DetectCardDocument/unknown_atr
+--- PASS: Test_DetectCardDocument (0.00s)
+    --- PASS: Test_DetectCardDocument/apollo (0.00s)
+    --- PASS: Test_DetectCardDocument/gemalto (0.00s)
+    --- PASS: Test_DetectCardDocument/vehicle (0.00s)
+    --- PASS: Test_DetectCardDocument/status_error (0.00s)
+    --- PASS: Test_DetectCardDocument/unknown_atr (0.00s)
+=== RUN   TestGemaltoInitCard
+=== RUN   TestGemaltoInitCard/first_applet
+=== RUN   TestGemaltoInitCard/second_applet
+=== RUN   TestGemaltoInitCard/fallback_applet
+=== RUN   TestGemaltoInitCard/all_fail
+=== RUN   TestGemaltoInitCard/first_transmit_error
+=== RUN   TestGemaltoInitCard/second_transmit_error
+=== RUN   TestGemaltoInitCard/third_transmit_error
+--- PASS: TestGemaltoInitCard (0.00s)
+    --- PASS: TestGemaltoInitCard/first_applet (0.00s)
+    --- PASS: TestGemaltoInitCard/second_applet (0.00s)
+    --- PASS: TestGemaltoInitCard/fallback_applet (0.00s)
+    --- PASS: TestGemaltoInitCard/all_fail (0.00s)
+    --- PASS: TestGemaltoInitCard/first_transmit_error (0.00s)
+    --- PASS: TestGemaltoInitCard/second_transmit_error (0.00s)
+    --- PASS: TestGemaltoInitCard/third_transmit_error (0.00s)
+=== RUN   TestGemaltoReadCard
+=== RUN   TestGemaltoReadCard/success
+=== RUN   TestGemaltoReadCard/document_read_error
+=== RUN   TestGemaltoReadCard/personal_read_error
+=== RUN   TestGemaltoReadCard/residence_read_error
+=== RUN   TestGemaltoReadCard/photo_read_error
+--- PASS: TestGemaltoReadCard (0.00s)
+    --- PASS: TestGemaltoReadCard/success (0.00s)
+    --- PASS: TestGemaltoReadCard/document_read_error (0.00s)
+    --- PASS: TestGemaltoReadCard/personal_read_error (0.00s)
+    --- PASS: TestGemaltoReadCard/residence_read_error (0.00s)
+    --- PASS: TestGemaltoReadCard/photo_read_error (0.00s)
+=== RUN   TestGemaltoGetDocument
+=== RUN   TestGemaltoGetDocument/document_parse_error
+=== RUN   TestGemaltoGetDocument/personal_parse_error
+=== RUN   TestGemaltoGetDocument/residence_parse_error
+=== RUN   TestGemaltoGetDocument/photo_decode_error
+--- PASS: TestGemaltoGetDocument (0.00s)
+    --- PASS: TestGemaltoGetDocument/document_parse_error (0.00s)
+    --- PASS: TestGemaltoGetDocument/personal_parse_error (0.00s)
+    --- PASS: TestGemaltoGetDocument/residence_parse_error (0.00s)
+    --- PASS: TestGemaltoGetDocument/photo_decode_error (0.00s)
+=== RUN   TestGemaltoAtr
+--- PASS: TestGemaltoAtr (0.00s)
+=== RUN   TestGemaltoReadFile
+=== RUN   TestGemaltoReadFile/success
+=== RUN   TestGemaltoReadFile/select_transmit_error
+=== RUN   TestGemaltoReadFile/select_bad_status
+=== RUN   TestGemaltoReadFile/header_read_error
+=== RUN   TestGemaltoReadFile/header_too_short
+=== RUN   TestGemaltoReadFile/body_read_error
+--- PASS: TestGemaltoReadFile (0.00s)
+    --- PASS: TestGemaltoReadFile/success (0.00s)
+    --- PASS: TestGemaltoReadFile/select_transmit_error (0.00s)
+    --- PASS: TestGemaltoReadFile/select_bad_status (0.00s)
+    --- PASS: TestGemaltoReadFile/header_read_error (0.00s)
+    --- PASS: TestGemaltoReadFile/header_too_short (0.00s)
+    --- PASS: TestGemaltoReadFile/body_read_error (0.00s)
+=== RUN   TestGemaltoReadCertificateFile
+=== RUN   TestGemaltoReadCertificateFile/success
+=== RUN   TestGemaltoReadCertificateFile/select_transmit_error
+=== RUN   TestGemaltoReadCertificateFile/select_bad_status
+=== RUN   TestGemaltoReadCertificateFile/header_read_error
+=== RUN   TestGemaltoReadCertificateFile/body_read_error
+--- PASS: TestGemaltoReadCertificateFile (0.00s)
+    --- PASS: TestGemaltoReadCertificateFile/success (0.00s)
+    --- PASS: TestGemaltoReadCertificateFile/select_transmit_error (0.00s)
+    --- PASS: TestGemaltoReadCertificateFile/select_bad_status (0.00s)
+    --- PASS: TestGemaltoReadCertificateFile/header_read_error (0.00s)
+    --- PASS: TestGemaltoReadCertificateFile/body_read_error (0.00s)
+=== RUN   TestGemaltoInitCrypto
+--- PASS: TestGemaltoInitCrypto (0.00s)
+=== RUN   TestGemaltoChangePinSuccess
+--- PASS: TestGemaltoChangePinSuccess (0.00s)
+=== RUN   TestGemaltoChangePinInvalidNew
+--- PASS: TestGemaltoChangePinInvalidNew (0.00s)
+=== RUN   TestGemaltoReadSignatures
+--- PASS: TestGemaltoReadSignatures (0.00s)
+=== RUN   TestGemaltoLoadCertificates_Existing
+--- PASS: TestGemaltoLoadCertificates_Existing (0.00s)
+=== RUN   TestGemaltoGetCertificates
+--- PASS: TestGemaltoGetCertificates (0.03s)
+=== RUN   Test_descramble
+=== RUN   Test_descramble/Case_0
+=== RUN   Test_descramble/Case_1
+=== RUN   Test_descramble/Case_2
+=== RUN   Test_descramble/Case_3
+=== RUN   Test_descramble/Case_4
+=== RUN   Test_descramble/Empty_case
+--- PASS: Test_descramble (0.00s)
+    --- PASS: Test_descramble/Case_0 (0.00s)
+    --- PASS: Test_descramble/Case_1 (0.00s)
+    --- PASS: Test_descramble/Case_2 (0.00s)
+    --- PASS: Test_descramble/Case_3 (0.00s)
+    --- PASS: Test_descramble/Case_4 (0.00s)
+    --- PASS: Test_descramble/Empty_case (0.00s)
+=== RUN   TestMedicalInitCard
+=== RUN   TestMedicalInitCard/success
+=== RUN   TestMedicalInitCard/transmit_error
+=== RUN   TestMedicalInitCard/bad_status
+--- PASS: TestMedicalInitCard (0.00s)
+    --- PASS: TestMedicalInitCard/success (0.00s)
+    --- PASS: TestMedicalInitCard/transmit_error (0.00s)
+    --- PASS: TestMedicalInitCard/bad_status (0.00s)
+=== RUN   TestMedicalReadCard
+=== RUN   TestMedicalReadCard/success
+=== RUN   TestMedicalReadCard/document_error
+=== RUN   TestMedicalReadCard/fixed_personal_error
+=== RUN   TestMedicalReadCard/variable_personal_error
+=== RUN   TestMedicalReadCard/variable_admin_error
+--- PASS: TestMedicalReadCard (0.00s)
+    --- PASS: TestMedicalReadCard/success (0.00s)
+    --- PASS: TestMedicalReadCard/document_error (0.00s)
+    --- PASS: TestMedicalReadCard/fixed_personal_error (0.00s)
+    --- PASS: TestMedicalReadCard/variable_personal_error (0.00s)
+    --- PASS: TestMedicalReadCard/variable_admin_error (0.00s)
+=== RUN   TestMedicalGetDocument
+=== RUN   TestMedicalGetDocument/success_male
+=== RUN   TestMedicalGetDocument/success_female
+=== RUN   TestMedicalGetDocument/document_parse_error
+=== RUN   TestMedicalGetDocument/fixed_parse_error
+=== RUN   TestMedicalGetDocument/variable_personal_parse_error
+=== RUN   TestMedicalGetDocument/variable_admin_parse_error
+--- PASS: TestMedicalGetDocument (0.00s)
+    --- PASS: TestMedicalGetDocument/success_male (0.00s)
+    --- PASS: TestMedicalGetDocument/success_female (0.00s)
+    --- PASS: TestMedicalGetDocument/document_parse_error (0.00s)
+    --- PASS: TestMedicalGetDocument/fixed_parse_error (0.00s)
+    --- PASS: TestMedicalGetDocument/variable_personal_parse_error (0.00s)
+    --- PASS: TestMedicalGetDocument/variable_admin_parse_error (0.00s)
+=== RUN   TestMedicalAtr
+--- PASS: TestMedicalAtr (0.00s)
+=== RUN   TestMedicalTestSuccess
+--- PASS: TestMedicalTestSuccess (0.00s)
+=== RUN   TestMakeVirtualCard
+--- PASS: TestMakeVirtualCard (0.00s)
+=== RUN   TestVirtualCard_Status
+--- PASS: TestVirtualCard_Status (0.00s)
+=== RUN   TestTransmit
+--- PASS: TestTransmit (0.00s)
+=== RUN   TestFormatState
+    state_test.go:29: FormatState(0) = ""; want "StateUnaware"
+--- FAIL: TestFormatState (0.00s)
+=== RUN   TestAtr
+--- PASS: TestAtr (0.00s)
+=== RUN   TestReadFile
+--- PASS: TestReadFile (0.00s)
+=== RUN   TestInitCard
+--- PASS: TestInitCard (0.00s)
+=== RUN   TestReadCard
+--- PASS: TestReadCard (0.00s)
+=== RUN   TestGetDocument
+--- PASS: TestGetDocument (0.00s)
+=== RUN   TestTest
+--- PASS: TestTest (0.00s)
+=== RUN   Test_parseVehicleCardFileSize
+--- PASS: Test_parseVehicleCardFileSize (0.00s)
+=== RUN   TestVehicleCardReadCard
+=== RUN   TestVehicleCardReadCard/success
+=== RUN   TestVehicleCardReadCard/document_0_error
+=== RUN   TestVehicleCardReadCard/document_1_error
+=== RUN   TestVehicleCardReadCard/document_2_error
+=== RUN   TestVehicleCardReadCard/document_3_error
+--- PASS: TestVehicleCardReadCard (0.00s)
+    --- PASS: TestVehicleCardReadCard/success (0.00s)
+    --- PASS: TestVehicleCardReadCard/document_0_error (0.00s)
+    --- PASS: TestVehicleCardReadCard/document_1_error (0.00s)
+    --- PASS: TestVehicleCardReadCard/document_2_error (0.00s)
+    --- PASS: TestVehicleCardReadCard/document_3_error (0.00s)
+=== RUN   TestVehicleCardGetDocument
+=== RUN   TestVehicleCardGetDocument/success
+--- PASS: TestVehicleCardGetDocument (0.00s)
+    --- PASS: TestVehicleCardGetDocument/success (0.00s)
+=== RUN   Test_DetectCardDocumentByAtr
+=== RUN   Test_DetectCardDocumentByAtr/Case_
+=== RUN   Test_DetectCardDocumentByAtr/Case_0102
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bb918008131fe9e8073ff614083000000df
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bff9400008131804380318065b0850201f3120fff82900079
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bf99600008031fe45534345372047434e335e
+=== RUN   Test_DetectCardDocumentByAtr/Case_3b9e968031fe4553434520382e302d433256300d0a6c
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bf41300008131fe4552465a4fed
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bdb960080b1fe451f830031c0641a1801000f900052
+--- PASS: Test_DetectCardDocumentByAtr (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_ (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_0102 (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bb918008131fe9e8073ff614083000000df (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bff9400008131804380318065b0850201f3120fff82900079 (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bf99600008031fe45534345372047434e335e (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3b9e968031fe4553434520382e302d433256300d0a6c (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bf41300008131fe4552465a4fed (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bdb960080b1fe451f830031c0641a1801000f900052 (0.00s)
+=== RUN   Test_ValidatePin
+--- PASS: Test_ValidatePin (0.00s)
+=== RUN   Test_PadPin
+--- PASS: Test_PadPin (0.00s)
+=== RUN   Test_TriesLeft
+--- PASS: Test_TriesLeft (0.00s)
+FAIL
+coverage: 87.2% of statements
+FAIL	github.com/ubavic/bas-celik/v2/card	0.058s
+=== RUN   Test_parseBerLength
+--- PASS: Test_parseBerLength (0.00s)
+=== RUN   Test_parseBerTag
+--- PASS: Test_parseBerTag (0.00s)
+=== RUN   TestParseBER
+=== RUN   TestParseBER/ok_primitive_child
+=== RUN   TestParseBER/invalid_data
+--- PASS: TestParseBER (0.00s)
+    --- PASS: TestParseBER/ok_primitive_child (0.00s)
+    --- PASS: TestParseBER/invalid_data (0.00s)
+=== RUN   Test_parseBERLayer
+=== RUN   Test_parseBERLayer/single_primitive
+=== RUN   Test_parseBERLayer/length_overflow
+--- PASS: Test_parseBERLayer (0.00s)
+    --- PASS: Test_parseBERLayer/single_primitive (0.00s)
+    --- PASS: Test_parseBERLayer/length_overflow (0.00s)
+=== RUN   TestBERAccess
+=== RUN   TestBERAccess/found
+=== RUN   TestBERAccess/missing
+--- PASS: TestBERAccess (0.00s)
+    --- PASS: TestBERAccess/found (0.00s)
+    --- PASS: TestBERAccess/missing (0.00s)
+=== RUN   TestBERAdd
+=== RUN   TestBERAdd/into_primitive
+=== RUN   TestBERAdd/new_child
+=== RUN   TestBERAdd/type_mismatch
+=== RUN   TestBERAdd/merge_constructed
+--- PASS: TestBERAdd (0.00s)
+    --- PASS: TestBERAdd/into_primitive (0.00s)
+    --- PASS: TestBERAdd/new_child (0.00s)
+    --- PASS: TestBERAdd/type_mismatch (0.00s)
+    --- PASS: TestBERAdd/merge_constructed (0.00s)
+=== RUN   TestBERMerge
+=== RUN   TestBERMerge/tag_mismatch
+=== RUN   TestBERMerge/merge_child
+--- PASS: TestBERMerge (0.00s)
+    --- PASS: TestBERMerge/tag_mismatch (0.00s)
+    --- PASS: TestBERMerge/merge_child (0.00s)
+=== RUN   TestAssignFromAndString
+=== RUN   TestAssignFromAndString/assign_success
+=== RUN   TestAssignFromAndString/assign_missing
+--- PASS: TestAssignFromAndString (0.00s)
+    --- PASS: TestAssignFromAndString/assign_success (0.00s)
+    --- PASS: TestAssignFromAndString/assign_missing (0.00s)
+PASS
+coverage: 88.6% of statements
+ok  	github.com/ubavic/bas-celik/v2/card/ber	(cached)	coverage: 88.6% of statements
+?   	github.com/ubavic/bas-celik/v2/card/cardErrors	[no test files]
+=== RUN   Test_parseTLV
+=== RUN   Test_parseTLV/Case_0
+=== RUN   Test_parseTLV/Case_1
+=== RUN   Test_parseTLV/Case_2
+=== RUN   Test_parseTLV/Case_3
+=== RUN   Test_parseTLV/Case_4
+=== RUN   Test_parseTLV/Case_5
+--- PASS: Test_parseTLV (0.00s)
+    --- PASS: Test_parseTLV/Case_0 (0.00s)
+    --- PASS: Test_parseTLV/Case_1 (0.00s)
+    --- PASS: Test_parseTLV/Case_2 (0.00s)
+    --- PASS: Test_parseTLV/Case_3 (0.00s)
+    --- PASS: Test_parseTLV/Case_4 (0.00s)
+    --- PASS: Test_parseTLV/Case_5 (0.00s)
+=== RUN   Test_AssignField
+=== RUN   Test_AssignField/Case_1
+=== RUN   Test_AssignField/Case_2
+=== RUN   Test_AssignField/Case_3
+--- PASS: Test_AssignField (0.00s)
+    --- PASS: Test_AssignField/Case_1 (0.00s)
+    --- PASS: Test_AssignField/Case_2 (0.00s)
+    --- PASS: Test_AssignField/Case_3 (0.00s)
+=== RUN   Test_assignBoolField
+=== RUN   Test_assignBoolField/Case_0
+=== RUN   Test_assignBoolField/Case_1
+=== RUN   Test_assignBoolField/Case_2
+--- PASS: Test_assignBoolField (0.00s)
+    --- PASS: Test_assignBoolField/Case_0 (0.00s)
+    --- PASS: Test_assignBoolField/Case_1 (0.00s)
+    --- PASS: Test_assignBoolField/Case_2 (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/ubavic/bas-celik/v2/card/tlv	(cached)	coverage: 100.0% of statements
+=== RUN   Test_GetFullName_ID
+--- PASS: Test_GetFullName_ID (0.00s)
+=== RUN   Test_GetFullAddress_ID
+--- PASS: Test_GetFullAddress_ID (0.00s)
+=== RUN   Test_GetFullPlaceOfBirth_ID
+--- PASS: Test_GetFullPlaceOfBirth_ID (0.00s)
+=== RUN   Test_BuildPdfID
+--- PASS: Test_BuildPdfID (0.05s)
+=== RUN   Test_GetFullName_Medical
+--- PASS: Test_GetFullName_Medical (0.00s)
+=== RUN   Test_GetFullStreetAddress_Medical
+--- PASS: Test_GetFullStreetAddress_Medical (0.00s)
+=== RUN   Test_GetFullPlaceAddress_Medical
+--- PASS: Test_GetFullPlaceAddress_Medical (0.00s)
+=== RUN   Test_BuildPdfMedical
+--- PASS: Test_BuildPdfMedical (0.03s)
+=== RUN   Test_GetExpiryDateFromRfzo
+--- PASS: Test_GetExpiryDateFromRfzo (0.00s)
+=== RUN   Test_parseDateFromRfzoResponse
+--- PASS: Test_parseDateFromRfzoResponse (0.00s)
+=== RUN   Test_BuildPdfVehicle
+--- PASS: Test_BuildPdfVehicle (0.02s)
+PASS
+coverage: 57.6% of statements
+ok  	github.com/ubavic/bas-celik/v2/document	(cached)	coverage: 57.6% of statements
+	github.com/ubavic/bas-celik/v2/internal		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/celiktheme		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/icon		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/reader		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/translation		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/widgets		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/logger		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/smartbox/server		coverage: 0.0% of statements
+=== RUN   Test_FormatDate
+--- PASS: Test_FormatDate (0.00s)
+=== RUN   Test_FormatDateYMD
+--- PASS: Test_FormatDateYMD (0.00s)
+=== RUN   Test_FormFormatYesNo
+--- PASS: Test_FormFormatYesNo (0.00s)
+=== RUN   Test_JoinWithComma
+--- PASS: Test_JoinWithComma (0.00s)
+=== RUN   Test_CyrillicToLatin
+--- PASS: Test_CyrillicToLatin (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/ubavic/bas-celik/v2/localization	(cached)	coverage: 100.0% of statements
+	github.com/ubavic/bas-celik/v2/test_helpers		coverage: 0.0% of statements
+FAIL

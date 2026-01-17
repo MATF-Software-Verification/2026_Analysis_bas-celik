@@ -1,0 +1,167 @@
+	github.com/ubavic/bas-celik/v2		coverage: 0.0% of statements
+=== RUN   Test_buildAPDU
+=== RUN   Test_buildAPDU/Case_0
+=== RUN   Test_buildAPDU/Case_1
+=== RUN   Test_buildAPDU/Case_2
+=== RUN   Test_buildAPDU/Case_3
+=== RUN   Test_buildAPDU/Case_4
+=== RUN   Test_buildAPDU/Case_5
+=== RUN   Test_buildAPDU/Case_6
+=== RUN   Test_buildAPDU/Case_7
+=== RUN   Test_buildAPDU/Case_8
+=== RUN   Test_buildAPDU/Case_9
+--- PASS: Test_buildAPDU (0.00s)
+    --- PASS: Test_buildAPDU/Case_0 (0.00s)
+    --- PASS: Test_buildAPDU/Case_1 (0.00s)
+    --- PASS: Test_buildAPDU/Case_2 (0.00s)
+    --- PASS: Test_buildAPDU/Case_3 (0.00s)
+    --- PASS: Test_buildAPDU/Case_4 (0.00s)
+    --- PASS: Test_buildAPDU/Case_5 (0.00s)
+    --- PASS: Test_buildAPDU/Case_6 (0.00s)
+    --- PASS: Test_buildAPDU/Case_7 (0.00s)
+    --- PASS: Test_buildAPDU/Case_8 (0.00s)
+    --- PASS: Test_buildAPDU/Case_9 (0.00s)
+=== RUN   Test_responseOK
+=== RUN   Test_responseOK/Case_0
+=== RUN   Test_responseOK/Case_1
+=== RUN   Test_responseOK/Case_2
+=== RUN   Test_responseOK/Case_3
+=== RUN   Test_responseOK/Case_4
+--- PASS: Test_responseOK (0.00s)
+    --- PASS: Test_responseOK/Case_0 (0.00s)
+    --- PASS: Test_responseOK/Case_1 (0.00s)
+    --- PASS: Test_responseOK/Case_2 (0.00s)
+    --- PASS: Test_responseOK/Case_3 (0.00s)
+    --- PASS: Test_responseOK/Case_4 (0.00s)
+=== RUN   Test_descramble
+=== RUN   Test_descramble/Case_0
+=== RUN   Test_descramble/Case_1
+=== RUN   Test_descramble/Case_2
+=== RUN   Test_descramble/Case_3
+=== RUN   Test_descramble/Case_4
+=== RUN   Test_descramble/Empty_case
+--- PASS: Test_descramble (0.00s)
+    --- PASS: Test_descramble/Case_0 (0.00s)
+    --- PASS: Test_descramble/Case_1 (0.00s)
+    --- PASS: Test_descramble/Case_2 (0.00s)
+    --- PASS: Test_descramble/Case_3 (0.00s)
+    --- PASS: Test_descramble/Case_4 (0.00s)
+    --- PASS: Test_descramble/Empty_case (0.00s)
+=== RUN   Test_parseVehicleCardFileSize
+--- PASS: Test_parseVehicleCardFileSize (0.00s)
+=== RUN   Test_DetectCardDocumentByAtr
+=== RUN   Test_DetectCardDocumentByAtr/Case_
+=== RUN   Test_DetectCardDocumentByAtr/Case_0102
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bb918008131fe9e8073ff614083000000df
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bff9400008131804380318065b0850201f3120fff82900079
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bf99600008031fe45534345372047434e335e
+=== RUN   Test_DetectCardDocumentByAtr/Case_3b9e968031fe4553434520382e302d433256300d0a6c
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bf41300008131fe4552465a4fed
+=== RUN   Test_DetectCardDocumentByAtr/Case_3bdb960080b1fe451f830031c0641a1801000f900052
+--- PASS: Test_DetectCardDocumentByAtr (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_ (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_0102 (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bb918008131fe9e8073ff614083000000df (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bff9400008131804380318065b0850201f3120fff82900079 (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bf99600008031fe45534345372047434e335e (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3b9e968031fe4553434520382e302d433256300d0a6c (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bf41300008131fe4552465a4fed (0.00s)
+    --- PASS: Test_DetectCardDocumentByAtr/Case_3bdb960080b1fe451f830031c0641a1801000f900052 (0.00s)
+=== RUN   Test_ValidatePin
+--- PASS: Test_ValidatePin (0.00s)
+=== RUN   Test_PadPin
+--- PASS: Test_PadPin (0.00s)
+=== RUN   Test_TriesLeft
+--- PASS: Test_TriesLeft (0.00s)
+PASS
+coverage: 13.4% of statements
+ok  	github.com/ubavic/bas-celik/v2/card	(cached)	coverage: 13.4% of statements
+=== RUN   Test_parseBerLength
+--- PASS: Test_parseBerLength (0.00s)
+=== RUN   Test_parseBerTag
+--- PASS: Test_parseBerTag (0.00s)
+PASS
+coverage: 30.3% of statements
+ok  	github.com/ubavic/bas-celik/v2/card/ber	(cached)	coverage: 30.3% of statements
+?   	github.com/ubavic/bas-celik/v2/card/cardErrors	[no test files]
+=== RUN   Test_parseTLV
+=== RUN   Test_parseTLV/Case_0
+=== RUN   Test_parseTLV/Case_1
+=== RUN   Test_parseTLV/Case_2
+=== RUN   Test_parseTLV/Case_3
+=== RUN   Test_parseTLV/Case_4
+=== RUN   Test_parseTLV/Case_5
+--- PASS: Test_parseTLV (0.00s)
+    --- PASS: Test_parseTLV/Case_0 (0.00s)
+    --- PASS: Test_parseTLV/Case_1 (0.00s)
+    --- PASS: Test_parseTLV/Case_2 (0.00s)
+    --- PASS: Test_parseTLV/Case_3 (0.00s)
+    --- PASS: Test_parseTLV/Case_4 (0.00s)
+    --- PASS: Test_parseTLV/Case_5 (0.00s)
+=== RUN   Test_AssignField
+=== RUN   Test_AssignField/Case_1
+=== RUN   Test_AssignField/Case_2
+=== RUN   Test_AssignField/Case_3
+--- PASS: Test_AssignField (0.00s)
+    --- PASS: Test_AssignField/Case_1 (0.00s)
+    --- PASS: Test_AssignField/Case_2 (0.00s)
+    --- PASS: Test_AssignField/Case_3 (0.00s)
+=== RUN   Test_assignBoolField
+=== RUN   Test_assignBoolField/Case_0
+=== RUN   Test_assignBoolField/Case_1
+=== RUN   Test_assignBoolField/Case_2
+--- PASS: Test_assignBoolField (0.00s)
+    --- PASS: Test_assignBoolField/Case_0 (0.00s)
+    --- PASS: Test_assignBoolField/Case_1 (0.00s)
+    --- PASS: Test_assignBoolField/Case_2 (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/ubavic/bas-celik/v2/card/tlv	(cached)	coverage: 100.0% of statements
+=== RUN   Test_GetFullName_ID
+--- PASS: Test_GetFullName_ID (0.00s)
+=== RUN   Test_GetFullAddress_ID
+--- PASS: Test_GetFullAddress_ID (0.00s)
+=== RUN   Test_GetFullPlaceOfBirth_ID
+--- PASS: Test_GetFullPlaceOfBirth_ID (0.00s)
+=== RUN   Test_BuildPdfID
+--- PASS: Test_BuildPdfID (0.05s)
+=== RUN   Test_GetFullName_Medical
+--- PASS: Test_GetFullName_Medical (0.00s)
+=== RUN   Test_GetFullStreetAddress_Medical
+--- PASS: Test_GetFullStreetAddress_Medical (0.00s)
+=== RUN   Test_GetFullPlaceAddress_Medical
+--- PASS: Test_GetFullPlaceAddress_Medical (0.00s)
+=== RUN   Test_BuildPdfMedical
+--- PASS: Test_BuildPdfMedical (0.03s)
+=== RUN   Test_GetExpiryDateFromRfzo
+--- PASS: Test_GetExpiryDateFromRfzo (0.00s)
+=== RUN   Test_parseDateFromRfzoResponse
+--- PASS: Test_parseDateFromRfzoResponse (0.00s)
+=== RUN   Test_BuildPdfVehicle
+--- PASS: Test_BuildPdfVehicle (0.02s)
+PASS
+coverage: 57.6% of statements
+ok  	github.com/ubavic/bas-celik/v2/document	(cached)	coverage: 57.6% of statements
+	github.com/ubavic/bas-celik/v2/internal		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/celiktheme		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/icon		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/reader		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/translation		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/gui/widgets		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/logger		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/smartbox/pkcs11		coverage: 0.0% of statements
+	github.com/ubavic/bas-celik/v2/internal/smartbox/server		coverage: 0.0% of statements
+=== RUN   Test_FormatDate
+--- PASS: Test_FormatDate (0.00s)
+=== RUN   Test_FormatDateYMD
+--- PASS: Test_FormatDateYMD (0.00s)
+=== RUN   Test_FormFormatYesNo
+--- PASS: Test_FormFormatYesNo (0.00s)
+=== RUN   Test_JoinWithComma
+--- PASS: Test_JoinWithComma (0.00s)
+=== RUN   Test_CyrillicToLatin
+--- PASS: Test_CyrillicToLatin (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/ubavic/bas-celik/v2/localization	(cached)	coverage: 100.0% of statements
