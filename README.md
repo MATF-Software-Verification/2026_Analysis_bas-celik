@@ -22,12 +22,64 @@ Komit projekta na kom se radi analiza:
 
 ## Alati korišćeni za analizu
 
-| Naziv           | Vrsta                  | Reprodukcija rezultata             | Detaljan opis                              |
+### Instaliranje potrebnih alata
+
+Uputstvo za instaliranje Go-a može se pronaći na [https://go.dev/doc/install](https://go.dev/doc/install).
+
+> Napomena: Go verzija korišćena za analizu je `go1.25.3` (za proveru verzije pokrenuti `go version`)
+
+> Napomena: Nakon instalacije potrebno je obezbediti da se $GOPATH/bin nalazi u PATH promenljivoj okruženja.
+
+Za instaliranje golangci-lint i gocyclo (nisu deo standardnog toolchain-a) pokrenuti sledeće komande:
+
+```
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+```
+
+> Napomena: Go fuzzing koristi ugrađenu podršku dostupnu od Go verzije 1.18.
+
+### Spisak korišćenih alata
+
+| Naziv           | Vrsta                  | Reprodukcija rezultata             | Rezultati analize                          |
 | --------------- | ---------------------- | ---------------------------------- | ------------------------------------------ |
 | Go Fmt          | Stilizovanje koda      | `./gofmt/run_gofmt.sh`             | [gofmt](./gofmt/README.md)                 |
 | GoVulncheck     | Statička verifikacija  | `./govulncheck/run_govulncheck.sh` | [govulncheck](./govulncheck/README.md)     |
 | Golangci lint   | Statička verifikacija  | `./golangci-lint/run_golangci.sh`  | [golangci-lint](./golangci-lint/README.md) |
 | Go test + cover | Dinamička verifikacija | `./gotest/run_gotest_cover.sh`     | [gotest_cover](./gotest/README.md)         |
 | Go fuzzing      | Dinamička verifikacija | `./gofuzz/run_gotest_fuzz.sh`      | [gotest_fuzz](./gofuzz/README.md)          |
+| Gocyclo         | Statička verifikacija  | `./gocyclo/run_gocyclo.sh`         | [gocyclo](./gocyclo/README.md)             |
 
 ## Zaključci
+
+### Gofmt
+
+Kod je već potpuno usklađen sa `gofmt` standardom, nisu pronađena odstupanja ni greške. Formatiranje je konzistentno i projekat je spreman za dalji razvoj bez stilskih korekcija.
+
+### GoVulncheck
+
+Identifikovane ranjivosti su bile u standardnoj biblioteci i `golang.org/x/crypto`, otklonjene su ažuriranjem Go verzije i zavisnosti. Trenutno nema prijavljenih poznatih ranjivosti nakon nadogradnje.
+
+### Golangci lint
+
+Većina nalaza su stilske prirode (`revive`) i neproverene greške u `defer` tokovima (`errcheck`), funkcionalnih problema nema.
+
+### Go test + cover
+
+Svi postojeći testovi prolaze, dodavanjem novih testova pokrivenost je porasla na oko 34%, što je i dalje nisko. Pronađena je jedna greška dodavanjem novih testova. Prioritet je pisanje dodatnih testova za ključne module kako bi se smanjio rizik regresija.
+
+### Go fuzzing
+
+Fuzz testovi za generisanje PDF dokumenata (ID/Medical/Vehicle) nisu izazvali padove niti panic. Raznovrsni generisani ulazi potvrđuju robusnost u radu sa neočekivanim podacima.
+
+### Gocyclo
+
+Nekoliko funkcija ima višu ciklomatičku složenost, deo dupliranog koda je već refaktorisán (helperi za PDF i teme). Preostala složenost uglavnom potiče od nužnih grana u protokolima kartica (ATR/BER/APDU).
+
+### Opšti zaključak
+
+Sprovedena statička i dinamička analiza pokazuje da je projekat stabilan, održiv i bez kritičnih bezbednosnih problema. Korišćeni alati pokrivaju širok spektar potencijalnih grešaka — od stilskih i semantičkih problema, preko poznatih ranjivosti u zavisnostima, do grešaka koje se mogu ispoljiti tokom izvršavanja programa.
+
+Statička analiza nije identifikovala ozbiljne logičke ili bezbednosne propuste, dok su uočeni problemi uglavnom stilske prirode ili posledica specifičnih implementacionih zahteva (npr. protokoli za obradu pametnih kartica). Dinamička analiza i fuzz testiranje dodatno potvrđuju robusnost sistema u radu sa neočekivanim ulazima.
+
+Glavni prostor za unapređenje nalazi se u povećanju pokrivenosti testovima, naročito u ključnim delovima poslovne logike, čime bi se dodatno smanjio rizik od regresija.
