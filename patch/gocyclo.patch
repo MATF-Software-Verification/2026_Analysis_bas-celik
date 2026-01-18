@@ -1,0 +1,833 @@
+diff --git a/document/medical.go b/document/medical.go
+index 8cc8d1a..2026ba1 100644
+--- a/document/medical.go
++++ b/document/medical.go
+@@ -101,6 +101,25 @@ func (doc *MedicalDocument) GetFullPlaceAddress() string {
+ 	return localization.JoinWithComma(doc.Place, doc.Municipality, doc.Country)
+ }
+ 
++func putMedicalData(pdf *gopdf.GoPdf, textLeftMargin float64, label string, data string) {
++		cell(pdf, label)
++		pdf.SetXY(textLeftMargin+144, pdf.GetY())
++
++		texts, err := pdf.SplitTextWithWordWrap(data, 350)
++		if err != nil && err != gopdf.ErrEmptyString {
++			panic(fmt.Errorf("splitting text: %w", err))
++		}
++
++		for i, text := range texts {
++			cell(pdf, text)
++			if i < len(texts)-1 {
++				pdf.SetXY(textLeftMargin+144, pdf.GetY()+11)
++			}
++		}
++
++		pdf.SetXY(textLeftMargin, pdf.GetY()+14)
++}
++
+ // BuildPdf creates a PDF representation of the MedicalDocument.
+ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	defer func() {
+@@ -133,40 +152,16 @@ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	const rightMargin = 535
+ 	const textLeftMargin = 38.243
+ 
+-	cell := func(s string) {
+-		err := pdf.Cell(nil, s)
+-		if err != nil {
+-			panic(fmt.Errorf("putting text: %w", err))
+-		}
+-	}
+-
+ 	section := func(name string) {
+ 		y := pdf.GetY() + 8
+ 		pdf.Line(leftMargin, y, rightMargin, y)
+ 		pdf.SetXY(textLeftMargin, y+12)
+-		cell(name)
++		cell(&pdf, name)
+ 		pdf.Line(leftMargin, y+32, rightMargin, y+32)
+ 		pdf.SetXY(textLeftMargin, y+41)
+ 	}
+ 
+-	putData := func(label, data string) {
+-		cell(label)
+-		pdf.SetXY(textLeftMargin+144, pdf.GetY())
+-
+-		texts, err := pdf.SplitTextWithWordWrap(data, 350)
+-		if err != nil && err != gopdf.ErrEmptyString {
+-			panic(fmt.Errorf("splitting text: %w", err))
+-		}
+-
+-		for i, text := range texts {
+-			cell(text)
+-			if i < len(texts)-1 {
+-				pdf.SetXY(textLeftMargin+144, pdf.GetY()+11)
+-			}
+-		}
+-
+-		pdf.SetXY(textLeftMargin, pdf.GetY()+14)
+-	}
++	
+ 
+ 	pdf.SetLineWidth(0.58)
+ 	pdf.SetLineType("solid")
+@@ -182,74 +177,73 @@ func (doc *MedicalDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	}
+ 
+ 	pdf.SetXY(218.6, 49.6)
+-	cell("ПРЕГЛЕД КАРТИЦЕ ЗДРАВСТВЕНОГ ОСИГУРАЊА (КЗО)")
++	cell(&pdf, "ПРЕГЛЕД КАРТИЦЕ ЗДРАВСТВЕНОГ ОСИГУРАЊА (КЗО)")
+ 
+ 	pdf.SetY(68)
+ 	section("Општи подаци о осигуранику")
+ 
+-	putData("Име:", doc.GivenName+" ("+doc.GivenNameLatin+")")
+-
+-	putData("Име једног родитеља:", doc.ParentName+" ("+doc.ParentNameLatin+")")
++	putMedicalData(&pdf,textLeftMargin, "Име:", doc.GivenName+" ("+doc.GivenNameLatin+")")
+ 
+-	putData("Презиме:", doc.FamilyName+" ("+doc.FamilyNameLatin+")")
++	putMedicalData(&pdf, textLeftMargin, "Име једног родитеља:", doc.ParentName+" ("+doc.ParentNameLatin+")")
+ 
+-	putData("Датум рођења:", doc.DateOfBirth)
++	putMedicalData(&pdf, textLeftMargin, "Презиме:", doc.FamilyName+" ("+doc.FamilyNameLatin+")")	
++	putMedicalData(&pdf, textLeftMargin, "Датум рођења:", doc.DateOfBirth)
+ 
+-	putData("Место, општина и држава:", doc.GetFullPlaceAddress())
++	putMedicalData(&pdf, textLeftMargin, "Место, општина и држава:", doc.GetFullPlaceAddress())
+ 
+-	putData("Улица:", doc.GetFullStreetAddress())
++	putMedicalData(&pdf, textLeftMargin, "Улица:", doc.GetFullStreetAddress())
+ 
+-	putData("Пол:", doc.Gender)
++	putMedicalData(&pdf, textLeftMargin, "Пол:", doc.Gender)
+ 
+-	putData("Језик:", doc.PrintLanguage)
++	putMedicalData(&pdf, textLeftMargin, "Језик:", doc.PrintLanguage)
+ 
+-	putData("ЛБО:", doc.InsurantNumber)
++	putMedicalData(&pdf, textLeftMargin, "ЛБО:", doc.InsurantNumber)
+ 
+-	putData("ЈМБГ:", doc.PersonalNumber)
++	putMedicalData(&pdf, textLeftMargin, "ЈМБГ:", doc.PersonalNumber)
+ 
+ 	section("Подаци о картици здравственог осигурања")
+ 
+-	putData("Датум издавања:", doc.DateOfIssue)
++	putMedicalData(&pdf, textLeftMargin, "Датум издавања:", doc.DateOfIssue)
+ 
+-	putData("Датум важења:", doc.DateOfExpiry)
++	putMedicalData(&pdf, textLeftMargin, "Датум важења:", doc.DateOfExpiry)
+ 
+-	putData("Оверена до:", doc.ValidUntil)
++	putMedicalData(&pdf, textLeftMargin, "Оверена до:", doc.ValidUntil)
+ 
+-	putData("Трајно оверена:", localization.FormatYesNo(doc.PermanentlyValid, localization.SrCyrillic))
++	putMedicalData(&pdf, textLeftMargin, "Трајно оверена:", localization.FormatYesNo(doc.PermanentlyValid, localization.SrCyrillic))
+ 
+ 	section("Подаци о носиоцу осигурања")
+ 
+-	putData("Име:", doc.CarrierGivenName+" ("+doc.CarrierGivenNameLatin+")")
++	putMedicalData(&pdf, textLeftMargin, "Име:", doc.CarrierGivenName+" ("+doc.CarrierGivenNameLatin+")")
+ 
+-	putData("Презиме:", doc.CarrierFamilyName+" ("+doc.CarrierFamilyName+")")
++	putMedicalData(&pdf, textLeftMargin, "Презиме:", doc.CarrierFamilyName+" ("+doc.CarrierFamilyName+")")
+ 
+-	putData("ЛБО:", doc.CarrierInsurantNumber)
++	putMedicalData(&pdf, textLeftMargin, "ЛБО:", doc.CarrierInsurantNumber)
+ 
+-	putData("ЈМБГ:", doc.CarrierIDNumber)
++	putMedicalData(&pdf, textLeftMargin, "ЈМБГ:", doc.CarrierIDNumber)
+ 
+-	putData("Члан породице:", localization.FormatYesNo(doc.CarrierFamilyMember, localization.SrCyrillic))
++	putMedicalData(&pdf, textLeftMargin, "Члан породице:", localization.FormatYesNo(doc.CarrierFamilyMember, localization.SrCyrillic))
+ 
+-	putData("Сродство:", doc.CarrierRelationship)
++	putMedicalData(&pdf, textLeftMargin, "Сродство:", doc.CarrierRelationship)
+ 
+ 	section("Подаци о осигурању")
+ 
+-	putData("Основ осигурања:", doc.InsuranceBasisRZZO)
++	putMedicalData(&pdf, textLeftMargin, "Основ осигурања:", doc.InsuranceBasisRZZO)
+ 
+-	putData("Датум почетка осигурања:", doc.InsuranceStartDate)
++	putMedicalData(&pdf, textLeftMargin, "Датум почетка осигурања:", doc.InsuranceStartDate)
+ 
+-	putData("Опис:", doc.InsuranceDescription)
++	putMedicalData(&pdf, textLeftMargin, "Опис:", doc.InsuranceDescription)
+ 
+ 	section("Подаци о обвезнику плаћања доприноса")
+ 
+-	putData("Назив:", doc.TaxpayerName)
++	putMedicalData(&pdf, textLeftMargin, "Назив:", doc.TaxpayerName)
+ 
+-	putData("Седиште:", doc.TaxpayerResidence)
++	putMedicalData(&pdf, textLeftMargin, "Седиште:", doc.TaxpayerResidence)
+ 
+-	putData("Регистарски број:", doc.TaxpayerNumber)
++	putMedicalData(&pdf, textLeftMargin, "Регистарски број:", doc.TaxpayerNumber)
+ 
+-	putData("ПИБ/ЈМБГ:", doc.TaxpayerIDNumber)
++	putMedicalData(&pdf, textLeftMargin, "ПИБ/ЈМБГ:", doc.TaxpayerIDNumber)
+ 
+-	putData("Делатност:", doc.TaxpayerActivityCode)
++	putMedicalData(&pdf, textLeftMargin, "Делатност:", doc.TaxpayerActivityCode)
+ 
+ 	fileName = doc.formatFilename() + ".pdf"
+ 
+diff --git a/document/vehicle.go b/document/vehicle.go
+index 80a4ba8..a54751a 100644
+--- a/document/vehicle.go
++++ b/document/vehicle.go
+@@ -53,6 +53,53 @@ type VehicleDocument struct {
+ 	YearOfProduction            string
+ }
+ 
++func putUnderline (pdf *gopdf.GoPdf,underlineOption gopdf.CellOption, str string, size int) {
++		err := pdf.SetFont("liberationsans", "U", size)
++		if err != nil {
++			panic(fmt.Errorf("setting font: %w", err))
++		}
++		err = pdf.CellWithOption(nil, str, underlineOption)
++		if err != nil {
++			panic(fmt.Errorf("cell: %w", err))
++		}
++		err = pdf.SetFont("liberationsans", "B", 12)
++		if err != nil {
++			panic(fmt.Errorf("setting font: %w", err))
++		}
++}
++
++func cell(pdf *gopdf.GoPdf, s string) {
++		err := pdf.Cell(nil, s)
++		if err != nil {
++			panic(fmt.Errorf("putting text: %w", err))
++		}
++	}
++
++func putParagraph (pdf *gopdf.GoPdf, textLeftMargin float64, data string) {
++		texts := strings.Split(data, ",")
++		if len(texts) == 2 {
++			cell(pdf, texts[0] + ",")
++			pdf.SetXY(textLeftMargin, pdf.GetY()+14)
++			cell(pdf, strings.TrimSpace(texts[1]))
++			pdf.SetXY(textLeftMargin, pdf.GetY()+20)
++			return
++		}
++
++		texts, err := pdf.SplitTextWithWordWrap(data, 500)
++		if err != nil && err != gopdf.ErrEmptyString {
++			panic(fmt.Errorf("splitting text: %w", err))
++		}
++
++		for i, text := range texts {
++			cell(pdf, text)
++			if i < len(texts)-1 {
++				pdf.SetXY(textLeftMargin, pdf.GetY()+14)
++			}
++		}
++
++		pdf.SetXY(textLeftMargin, pdf.GetY()+20)
++}
++
+ // BuildPdf creates a PDF representation of the VehicleDocument.
+ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr error) {
+ 	defer func() {
+@@ -102,55 +149,8 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 		return str
+ 	}
+ 
+-	cell := func(s string) {
+-		err := pdf.Cell(nil, s)
+-		if err != nil {
+-			panic(fmt.Errorf("putting text: %w", err))
+-		}
+-	}
+-
+ 	putData := func(label, data string) {
+-		cell(label + ": " + data)
+-	}
+-
+-	putUnderline := func(str string, size int) {
+-		err = pdf.SetFont("liberationsans", "U", size)
+-		if err != nil {
+-			panic(fmt.Errorf("setting font: %w", err))
+-		}
+-		err = pdf.CellWithOption(nil, str, underlineOption)
+-		if err != nil {
+-			panic(fmt.Errorf("cell: %w", err))
+-		}
+-		err = pdf.SetFont("liberationsans", "B", 12)
+-		if err != nil {
+-			panic(fmt.Errorf("setting font: %w", err))
+-		}
+-	}
+-
+-	putParagraph := func(data string) {
+-		texts := strings.Split(data, ",")
+-		if len(texts) == 2 {
+-			cell(texts[0] + ",")
+-			pdf.SetXY(textLeftMargin, pdf.GetY()+14)
+-			cell(strings.TrimSpace(texts[1]))
+-			pdf.SetXY(textLeftMargin, pdf.GetY()+20)
+-			return
+-		}
+-
+-		texts, err = pdf.SplitTextWithWordWrap(data, 500)
+-		if err != nil && err != gopdf.ErrEmptyString {
+-			panic(fmt.Errorf("splitting text: %w", err))
+-		}
+-
+-		for i, text := range texts {
+-			cell(text)
+-			if i < len(texts)-1 {
+-				pdf.SetXY(textLeftMargin, pdf.GetY()+14)
+-			}
+-		}
+-
+-		pdf.SetXY(textLeftMargin, pdf.GetY()+20)
++		cell(&pdf, label + ": " + data)
+ 	}
+ 
+ 	err = pdf.SetFont("liberationsans", "B", 29)
+@@ -158,7 +158,7 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 		panic(fmt.Errorf("setting font: %w", err))
+ 	}
+ 	pdf.SetXY(textLeftMargin, 35)
+-	cell("Čitač saobraćajne dozvole")
++	cell(&pdf, "Čitač saobraćajne dozvole")
+ 
+ 	pdf.SetLineWidth(2.9)
+ 	pdf.SetLineType("solid")
+@@ -169,7 +169,7 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	if err != nil {
+ 		panic(fmt.Errorf("setting font size: %w", err))
+ 	}
+-	cell("Registarska oznaka: " + doc.RegistrationNumberOfVehicle)
++	cell(&pdf, "Registarska oznaka: " + doc.RegistrationNumberOfVehicle)
+ 
+ 	pdf.SetXY(textLeftMargin, 145)
+ 	err = pdf.SetFontSize(12)
+@@ -179,14 +179,14 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 
+ 	putData("Datum izdavanja", doc.IssuingDate)
+ 	tab()
+-	putUnderline("Važi do: "+doc.ExpiryDate, 12)
++	putUnderline(&pdf, underlineOption, "Važi do: "+doc.ExpiryDate, 12)
+ 	newLine()
+ 
+ 	putData("Saobraćajnu izdao", doc.StateIssuing)
+ 	tab()
+ 	putData("Zabrana otuđenja", "")
+ 	newLine()
+-	putParagraph(doc.AuthorityIssuing + ",\n" + doc.CompetentAuthority)
++	putParagraph(&pdf, textLeftMargin, doc.AuthorityIssuing + ",\n" + doc.CompetentAuthority)
+ 
+ 	putData("Broj saobraćajne", doc.UnambiguousNumber)
+ 	newLine()
+@@ -195,7 +195,7 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	newLine()
+ 
+ 	pdf.SetXY(textLeftMargin, 272)
+-	putUnderline("Podaci o vlasniku", 20)
++	putUnderline(&pdf, underlineOption, "Podaci o vlasniku", 20)
+ 	pdf.SetXY(textLeftMargin, pdf.GetY()+25)
+ 
+ 	putData("Vlasnik", doc.OwnersSurnameOrBusinessName)
+@@ -223,7 +223,7 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 	newLine()
+ 
+ 	pdf.SetXY(textLeftMargin, pdf.GetY()+6)
+-	putUnderline("Podaci o vozilu", 20)
++	putUnderline(&pdf, underlineOption, "Podaci o vozilu", 20)
+ 	pdf.SetXY(textLeftMargin, pdf.GetY()+25)
+ 
+ 	putData("Datum prve registracije", doc.DateOfFirstRegistration)
+@@ -263,7 +263,7 @@ func (doc *VehicleDocument) BuildPdf() (data []byte, fileName string, retErr err
+ 
+ 	putData("Odnos snaga/masa", doc.PowerWeightRatio)
+ 	tab()
+-	cell("Najveća dozvoljena")
++	cell(&pdf, "Najveća dozvoljena")
+ 	newLine()
+ 
+ 	putData("Kategorija", doc.VehicleCategory)
+diff --git a/internal/gui/celiktheme/theme.go b/internal/gui/celiktheme/theme.go
+index d7fad96..2631c90 100644
+--- a/internal/gui/celiktheme/theme.go
++++ b/internal/gui/celiktheme/theme.go
+@@ -14,6 +14,58 @@ type Theme struct {
+ 	dark          bool
+ }
+ 
++var (
++	defaultColor = color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x10}
++
++	lightColors = map[fyne.ThemeColorName]color.Color{
++		theme.ColorNameBackground:       color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF},
++		theme.ColorNameButton:           color.NRGBA{R: 0xF0, G: 0xF0, B: 0xF0, A: 0xFF},
++		theme.ColorNameDisabledButton:   color.NRGBA{R: 0xD0, G: 0xD0, B: 0xD0, A: 0xFF},
++		theme.ColorNameDisabled:         color.NRGBA{R: 0x60, G: 0x60, B: 0x60, A: 0xFF},
++		theme.ColorNameError:            color.NRGBA{R: 0xF0, G: 0x47, B: 0x3B, A: 0xFF},
++		theme.ColorNameFocus:            color.NRGBA{R: 0xDE, G: 0xEB, B: 0xFA, A: 0xFF},
++		theme.ColorNameForeground:       color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF},
++		theme.ColorNameForegroundOnPrimary: color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF},
++		theme.ColorNameHeaderBackground: color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF},
++		theme.ColorNameHover:            color.NRGBA{R: 0x00, G: 0x00, B: 0x40, A: 0x10},
++		theme.ColorNameHyperlink:        color.NRGBA{R: 0x50, G: 0x50, B: 0xA0, A: 0xFF},
++		theme.ColorNameInputBackground:  color.NRGBA{R: 0xF0, G: 0xF0, B: 0xF0, A: 0xFF},
++		theme.ColorNameInputBorder:      color.NRGBA{R: 0xDA, G: 0xDA, B: 0xDA, A: 0xFF},
++		theme.ColorNameMenuBackground:   color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF},
++		theme.ColorNameOverlayBackground: color.NRGBA{R: 0xF9, G: 0xF9, B: 0xF9, A: 0xFF},
++		theme.ColorNamePlaceHolder:      color.NRGBA{R: 0x88, G: 0x88, B: 0x88, A: 0xFF},
++		theme.ColorNamePressed:          color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x00},
++		theme.ColorNamePrimary:          color.NRGBA{R: 0x5A, G: 0x73, B: 0x8F, A: 0xFF},
++		theme.ColorNameScrollBar:        color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x99},
++		theme.ColorNameSelection:        color.NRGBA{R: 0xDE, G: 0xEB, B: 0xFA, A: 0xFF},
++		theme.ColorNameShadow:           color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x10},
++	}
++
++	darkColors = map[fyne.ThemeColorName]color.Color{
++		theme.ColorNameBackground:       color.NRGBA{R: 0x10, G: 0x10, B: 0x13, A: 0xFF},
++		theme.ColorNameButton:           color.NRGBA{R: 0x20, G: 0x20, B: 0x20, A: 0xFF},
++		theme.ColorNameDisabledButton:   color.NRGBA{R: 0x12, G: 0x12, B: 0x12, A: 0xFF},
++		theme.ColorNameDisabled:         color.NRGBA{R: 0x40, G: 0x40, B: 0x40, A: 0xFF},
++		theme.ColorNameError:            color.NRGBA{R: 0xF0, G: 0x47, B: 0x3B, A: 0xFF},
++		theme.ColorNameFocus:            color.NRGBA{R: 0x23, G: 0x20, B: 0x24, A: 0xFF},
++		theme.ColorNameForeground:       color.NRGBA{R: 0xD0, G: 0xD0, B: 0xD0, A: 0xFF},
++		theme.ColorNameForegroundOnPrimary: color.NRGBA{R: 0xD9, G: 0xD0, B: 0xD0, A: 0xFF},
++		theme.ColorNameHeaderBackground: color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF},
++		theme.ColorNameHover:            color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0x10},
++		theme.ColorNameHyperlink:        color.NRGBA{R: 0x80, G: 0x90, B: 0xF0, A: 0xFF},
++		theme.ColorNameInputBackground:  color.NRGBA{R: 0x20, G: 0x20, B: 0x20, A: 0xFF},
++		theme.ColorNameInputBorder:      color.NRGBA{R: 0xDA, G: 0xDA, B: 0xDA, A: 0x00},
++		theme.ColorNameMenuBackground:   color.NRGBA{R: 0x15, G: 0x15, B: 0x15, A: 0xFF},
++		theme.ColorNameOverlayBackground: color.NRGBA{R: 0x15, G: 0x15, B: 0x17, A: 0xFF},
++		theme.ColorNamePlaceHolder:      color.NRGBA{R: 0x88, G: 0x88, B: 0x88, A: 0xFF},
++		theme.ColorNamePressed:          color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x00},
++		theme.ColorNamePrimary:          color.NRGBA{R: 0x41, G: 0x4D, B: 0x7A, A: 0xFF},
++		theme.ColorNameScrollBar:        color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0x50},
++		theme.ColorNameSelection:        color.NRGBA{R: 0x23, G: 0x20, B: 0x24, A: 0xFF},
++		theme.ColorNameShadow:           color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x40},
++	}
++)
++
+ // NewTheme creates a new Theme instance based on the user's selection.
+ func NewTheme(themeSelection int) Theme {
+ 	theme := Theme{}
+@@ -61,99 +113,15 @@ func (Theme) CornerRadius() float32 {
+ }
+ 
+ func lightTheme(c fyne.ThemeColorName) color.Color {
+-	switch c {
+-	case theme.ColorNameBackground:
+-		return color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}
+-	case theme.ColorNameButton:
+-		return color.NRGBA{R: 0xF0, G: 0xF0, B: 0xF0, A: 0xFF}
+-	case theme.ColorNameDisabledButton:
+-		return color.NRGBA{R: 0xD0, G: 0xD0, B: 0xD0, A: 0xFF}
+-	case theme.ColorNameDisabled:
+-		return color.NRGBA{R: 0x60, G: 0x60, B: 0x60, A: 0xFF}
+-	case theme.ColorNameError:
+-		return color.NRGBA{R: 0xF0, G: 0x47, B: 0x3B, A: 0xFF}
+-	case theme.ColorNameFocus:
+-		return color.NRGBA{R: 0xDE, G: 0xEB, B: 0xFA, A: 0xFF}
+-	case theme.ColorNameForeground:
+-		return color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF}
+-	case theme.ColorNameForegroundOnPrimary:
+-		return color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}
+-	case theme.ColorNameHeaderBackground:
+-		return color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF}
+-	case theme.ColorNameHover:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x40, A: 0x10}
+-	case theme.ColorNameHyperlink:
+-		return color.NRGBA{R: 0x50, G: 0x50, B: 0xA0, A: 0xFF}
+-	case theme.ColorNameInputBackground:
+-		return color.NRGBA{R: 0xF0, G: 0xF0, B: 0xF0, A: 0xFF}
+-	case theme.ColorNameInputBorder:
+-		return color.NRGBA{R: 0xDA, G: 0xDA, B: 0xDA, A: 0xFF}
+-	case theme.ColorNameMenuBackground:
+-		return color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}
+-	case theme.ColorNameOverlayBackground:
+-		return color.NRGBA{R: 0xF9, G: 0xF9, B: 0xF9, A: 0xFF}
+-	case theme.ColorNamePlaceHolder:
+-		return color.NRGBA{R: 0x88, G: 0x88, B: 0x88, A: 0xFF}
+-	case theme.ColorNamePressed:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x00}
+-	case theme.ColorNamePrimary:
+-		return color.NRGBA{R: 0x5A, G: 0x73, B: 0x8F, A: 0xFF}
+-	case theme.ColorNameScrollBar:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x99}
+-	case theme.ColorNameSelection:
+-		return color.NRGBA{R: 0xDE, G: 0xEB, B: 0xFA, A: 0xFF}
+-	case theme.ColorNameShadow:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x10}
+-	default:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x10}
++	if col, ok := lightColors[c]; ok {
++		return col
+ 	}
++	return defaultColor
+ }
+ 
+ func darkTheme(c fyne.ThemeColorName) color.Color {
+-	switch c {
+-	case theme.ColorNameBackground:
+-		return color.NRGBA{R: 0x10, G: 0x10, B: 0x13, A: 0xFF}
+-	case theme.ColorNameButton:
+-		return color.NRGBA{R: 0x20, G: 0x20, B: 0x20, A: 0xFF}
+-	case theme.ColorNameDisabledButton:
+-		return color.NRGBA{R: 0x12, G: 0x12, B: 0x12, A: 0xFF}
+-	case theme.ColorNameDisabled:
+-		return color.NRGBA{R: 0x40, G: 0x40, B: 0x40, A: 0xFF}
+-	case theme.ColorNameError:
+-		return color.NRGBA{R: 0xF0, G: 0x47, B: 0x3B, A: 0xFF}
+-	case theme.ColorNameFocus:
+-		return color.NRGBA{R: 0x23, G: 0x20, B: 0x24, A: 0xFF}
+-	case theme.ColorNameForeground:
+-		return color.NRGBA{R: 0xD0, G: 0xD0, B: 0xD0, A: 0xFF}
+-	case theme.ColorNameForegroundOnPrimary:
+-		return color.NRGBA{R: 0xD9, G: 0xD0, B: 0xD0, A: 0xFF}
+-	case theme.ColorNameHeaderBackground:
+-		return color.NRGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xFF}
+-	case theme.ColorNameHover:
+-		return color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0x10}
+-	case theme.ColorNameHyperlink:
+-		return color.NRGBA{R: 0x80, G: 0x90, B: 0xF0, A: 0xFF}
+-	case theme.ColorNameInputBackground:
+-		return color.NRGBA{R: 0x20, G: 0x20, B: 0x20, A: 0xFF}
+-	case theme.ColorNameInputBorder:
+-		return color.NRGBA{R: 0xDA, G: 0xDA, B: 0xDA, A: 0x00}
+-	case theme.ColorNameMenuBackground:
+-		return color.NRGBA{R: 0x15, G: 0x15, B: 0x15, A: 0xFF}
+-	case theme.ColorNameOverlayBackground:
+-		return color.NRGBA{R: 0x15, G: 0x15, B: 0x17, A: 0xFF}
+-	case theme.ColorNamePlaceHolder:
+-		return color.NRGBA{R: 0x88, G: 0x88, B: 0x88, A: 0xFF}
+-	case theme.ColorNamePressed:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x00}
+-	case theme.ColorNamePrimary:
+-		return color.NRGBA{R: 0x41, G: 0x4D, B: 0x7A, A: 0xFF}
+-	case theme.ColorNameScrollBar:
+-		return color.NRGBA{R: 0xFF, G: 0xFF, B: 0xFF, A: 0x50}
+-	case theme.ColorNameSelection:
+-		return color.NRGBA{R: 0x23, G: 0x20, B: 0x24, A: 0xFF}
+-	case theme.ColorNameShadow:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x40}
+-	default:
+-		return color.NRGBA{R: 0x00, G: 0x00, B: 0x00, A: 0x10}
++	if col, ok := darkColors[c]; ok {
++		return col
+ 	}
++	return defaultColor
+ }
+diff --git a/internal/read.go b/internal/read.go
+index 5c13703..fbf80c8 100644
+--- a/internal/read.go
++++ b/internal/read.go
+@@ -22,117 +22,156 @@ type LaunchConfig struct {
+ 	EmbedDirectory        embed.FS
+ }
+ 
+-func readAndSave(cfg LaunchConfig) error {
+-	ctx, err := scard.EstablishContext()
+-	if err != nil {
+-		return fmt.Errorf("establishing context: %w", err)
++func checkFile(path string) error {
++	if len(path) == 0 {
++		return nil
+ 	}
+ 
+-	defer ctx.Release()
+-
+-	if len(cfg.PdfPath) > 0 {
+-		if _, err := os.Stat(cfg.PdfPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+-			return fmt.Errorf("opening file %s: %w", cfg.PdfPath, err)
+-		}
++	_, err := os.Stat(path)
++	if err != nil && !errors.Is(err, os.ErrNotExist) {
++		return fmt.Errorf("checking file %s: %w", path, err)
+ 	}
+ 
+-	if len(cfg.JSONPath) > 0 {
+-		if _, err := os.Stat(cfg.JSONPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+-			return fmt.Errorf("opening file %s: %w", cfg.JSONPath, err)
++	return nil
++}
++
++func writeFileIfNotEmpty(path string, generate func() ([]byte, string, error)) error {
++	if len(path) > 0 {
++		pdf, _, err := generate()
++		if err != nil {
++			return fmt.Errorf("generating pdf: %w", err)
+ 		}
+-	}
+ 
+-	if len(cfg.ExcelPath) > 0 {
+-		if _, err := os.Stat(cfg.ExcelPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+-			return fmt.Errorf("opening file %s: %w", cfg.ExcelPath, err)
++		err = os.WriteFile(path, pdf, 0600)
++		if err != nil {
++			return fmt.Errorf("writing file %s: %w", path, err)
+ 		}
+ 	}
++	return nil
++}
+ 
++func checkReaders(ctx *scard.Context, cfg LaunchConfig) ([]string, error) {
+ 	readersNames, err := ctx.ListReaders()
+ 	if err != nil {
+-		return fmt.Errorf("listing readers: %w", err)
++		return nil, fmt.Errorf("listing readers: %w", err)
+ 	}
+ 
+ 	if len(readersNames) == 0 {
+-		return fmt.Errorf("no reader found")
++		return nil, fmt.Errorf("no reader found")
+ 	}
+ 
+ 	if cfg.Reader >= uint(len(readersNames)) {
+-		return fmt.Errorf("only %d readers found", len(readersNames))
++		return nil, fmt.Errorf("only %d readers found", len(readersNames))
+ 	}
+ 
+-	sCard, err := ctx.Connect(readersNames[cfg.Reader], scard.ShareShared, scard.ProtocolAny)
+-	if err != nil {
+-		return fmt.Errorf("connecting reader %s: %w", readersNames[cfg.Reader], err)
++	return readersNames, nil
++}
++
++func updateMedical(doc *document.MedicalDocument, cfg LaunchConfig) error {
++	if cfg.GetValidUntilFromRfzo {
++		err := doc.UpdateValidUntilDateFromRfzo()
++		if err != nil {
++			return fmt.Errorf("updating `ValidUntil` date: %w", err)
++		}
++	}
++	return nil
++}
++
++func checkFiles(cfg LaunchConfig) error {
++	if err := checkFile(cfg.PdfPath); err != nil {
++		return err
+ 	}
+ 
+-	defer sCard.Disconnect(scard.LeaveCard)
++	if err := checkFile(cfg.JSONPath); err != nil {
++		return err
++	}
+ 
++	if err := checkFile(cfg.ExcelPath); err != nil {
++		return err
++	}
++
++	return nil;
++}
++
++func detectCardAndGetDocument(sCard *scard.Card) (document.Document, error) {
+ 	cardDoc, err := card.DetectCardDocument(sCard)
+ 	if err != nil {
+-		return fmt.Errorf("detecting card type: %w", err)
++		return nil, fmt.Errorf("detecting card type: %w", err)
+ 	}
+ 
+ 	err = cardDoc.InitCard()
+ 	if err != nil {
+-		return fmt.Errorf("initializing card: %w", err)
++		return nil, fmt.Errorf("initializing card: %w", err)
+ 	}
+ 
+ 	err = cardDoc.ReadCard()
+ 	if err != nil {
+-		return fmt.Errorf("reading card: %w", err)
++		return nil, fmt.Errorf("reading card: %w", err)
+ 	}
+ 
+ 	doc, err := cardDoc.GetDocument()
+ 	if err != nil {
+-		return fmt.Errorf("getting document: %w", err)
++		return nil,	 fmt.Errorf("getting document: %w", err)
+ 	}
++	return doc, nil
++}
+ 
+-	switch doc := doc.(type) {
+-	case *document.MedicalDocument:
+-		if cfg.GetValidUntilFromRfzo {
+-			err := doc.UpdateValidUntilDateFromRfzo()
+-			if err != nil {
+-				return fmt.Errorf("updating `ValidUntil` date: %w", err)
+-			}
+-		}
++func writeFilesIfNotEmpty(cfg LaunchConfig, doc document.Document) error {
++	if err := writeFileIfNotEmpty(cfg.PdfPath, doc.BuildPdf); err != nil {
++    	return fmt.Errorf("pdf: %w", err)
+ 	}
+ 
+-	if len(cfg.PdfPath) > 0 {
+-		pdf, _, err := doc.BuildPdf()
+-		if err != nil {
+-			return fmt.Errorf("generating pdf: %w", err)
+-		}
++	if err := writeFileIfNotEmpty(cfg.JSONPath, func() ([]byte, string, error) {json, err := doc.BuildJson(); return json, "", err}); err != nil {
++    	return fmt.Errorf("pdf: %w", err)
++	}
+ 
+-		err = os.WriteFile(cfg.PdfPath, pdf, 0600)
+-		if err != nil {
+-			return fmt.Errorf("writing file %s: %w", cfg.PdfPath, err)
+-		}
++	if err := writeFileIfNotEmpty(cfg.ExcelPath, doc.BuildExcel); err != nil {
++		return fmt.Errorf("excel: %w", err)
+ 	}
++	return nil
+ 
+-	if len(cfg.JSONPath) > 0 {
+-		json, err := doc.BuildJson()
+-		if err != nil {
+-			return fmt.Errorf("generating json: %w", err)
+-		}
++}
+ 
+-		err = os.WriteFile(cfg.JSONPath, json, 0600)
+-		if err != nil {
+-			return fmt.Errorf("writing file %s: %w", cfg.JSONPath, err)
+-		}
++func readAndSave(cfg LaunchConfig) error {
++	ctx, err := scard.EstablishContext()
++	if err != nil {
++		return fmt.Errorf("establishing context: %w", err)
+ 	}
+ 
+-	if len(cfg.ExcelPath) > 0 {
+-		excel, _, err := doc.BuildExcel()
+-		if err != nil {
+-			return fmt.Errorf("generating json: %w", err)
+-		}
++	defer ctx.Release()
+ 
+-		err = os.WriteFile(cfg.ExcelPath, excel, 0600)
+-		if err != nil {
+-			return fmt.Errorf("writing file %s: %w", cfg.ExcelPath, err)
++	// Check output files
++	if err := checkFiles(cfg); err != nil {
++		return err
++	}
++
++	readersNames, err := checkReaders(ctx, cfg)
++	if err != nil {
++		return err
++	}
++
++	sCard, err := ctx.Connect(readersNames[cfg.Reader], scard.ShareShared, scard.ProtocolAny)
++	if err != nil {
++		return fmt.Errorf("connecting reader %s: %w", readersNames[cfg.Reader], err)
++	}
++
++	defer sCard.Disconnect(scard.LeaveCard)
++
++	doc, err := detectCardAndGetDocument(sCard)
++	if err != nil {
++		return err
++	}
++
++	switch doc := doc.(type) {
++	case *document.MedicalDocument:
++		if err := updateMedical(doc, cfg); err != nil {
++			return err
+ 		}
+ 	}
+ 
++	if err := writeFilesIfNotEmpty(cfg, doc); err != nil {
++    	return err
++	}
++
+ 	return nil
+ }
+diff --git a/internal/smartbox/pkcs11/vendor.go b/internal/smartbox/pkcs11/vendor.go
+index a98020d..af1303c 100644
+--- a/internal/smartbox/pkcs11/vendor.go
++++ b/internal/smartbox/pkcs11/vendor.go
+@@ -17,6 +17,27 @@ const (
+ 	CardVendorPks
+ )
+ 
++var (
++	linuxVendorPaths = map[CardVendor]string{
++		CardVendorPosta:  "/usr/lib/libaetpkss.so",
++		CardVendorEsmart: "/usr/lib/libeToken.so",
++	}
++
++	darwinVendorPaths = map[CardVendor]string{
++		CardVendorPosta:  "/Applications/tokenadmin.app/Contents/Frameworks/libaetpkss.dylib",
++		CardVendorEsmart: "/Library/Frameworks/eToken.framework/Versions/A/libIDPrimePKCS11.dylib",
++		CardVendorHalcom: "/Applications/Personal.app/Contents/Frameworks/libtokenapi.dylib",
++	}
++
++	windowsVendorPaths = map[CardVendor]string{
++		CardVendorHalcom: "C:\\Program Files (x86)\\Personal\\bin64\\personal64.dll",
++		CardVendorPosta:  "C:\\Windows\\System32\\aetpkss1.dll",
++		CardVendorEsmart: "C:\\Program Files\\SafeNet\\Authentication\\SAC\\x64\\IDPrimePKCS1164.dll",
++		CardVendorMup:    "C:\\Program Files\\TrustEdgeID\\netsetpkcs11_x64.dll",
++		CardVendorPks:    "C:\\Program Files\\TrustEdgeID\\netsetpkcs11_x64.dll",
++	}
++)
++
+ // String returns the string representation of the CardVendor.
+ func (cv CardVendor) String() string {
+ 	switch cv {
+@@ -37,44 +58,18 @@ func (cv CardVendor) String() string {
+ 
+ // GetDefaultPath returns the default PKCS#11 library path for the given card vendor and operating system.
+ func GetDefaultPath(cv CardVendor, os string) string {
+-	if os == "linux" {
+-		switch cv {
+-		case CardVendorPosta:
+-			return "/usr/lib/libaetpkss.so"
+-		case CardVendorEsmart:
+-			return "/usr/lib/libeToken.so"
+-		default:
+-			return ""
++	switch os {
++	case "linux":
++		if path, ok := linuxVendorPaths[cv]; ok {
++			return path
+ 		}
+-	}
+-
+-	if os == "darwin" {
+-		switch cv {
+-		case CardVendorPosta:
+-			return "/Applications/tokenadmin.app/Contents/Frameworks/libaetpkss.dylib"
+-		case CardVendorEsmart:
+-			return "/Library/Frameworks/eToken.framework/Versions/A/libIDPrimePKCS11.dylib"
+-		case CardVendorHalcom:
+-			return "/Applications/Personal.app/Contents/Frameworks/libtokenapi.dylib"
+-		default:
+-			return ""
++	case "darwin":
++		if path, ok := darwinVendorPaths[cv]; ok {
++			return path
+ 		}
+-	}
+-
+-	if os == "windows" {
+-		switch cv {
+-		case CardVendorHalcom:
+-			return "C:\\Program Files (x86)\\Personal\\bin64\\personal64.dll"
+-		case CardVendorPosta:
+-			return "C:\\Windows\\System32\\aetpkss1.dll"
+-		case CardVendorEsmart:
+-			return "C:\\Program Files\\SafeNet\\Authentication\\SAC\\x64\\IDPrimePKCS1164.dll"
+-		case CardVendorMup:
+-			return "C:\\Program Files\\TrustEdgeID\\netsetpkcs11_x64.dll"
+-		case CardVendorPks:
+-			return "C:\\Program Files\\TrustEdgeID\\netsetpkcs11_x64.dll"
+-		default:
+-			return ""
++	case "windows":
++		if path, ok := windowsVendorPaths[cv]; ok {
++			return path
+ 		}
+ 	}
+ 
