@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -ux
 echo "Running Go fuzz tests..."
 
 

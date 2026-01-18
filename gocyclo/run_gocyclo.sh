@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -ux
 echo "Running gocyclo..."
 
 # Detect if running from gocyclo folder or project root
