@@ -1,6 +1,6 @@
 # Analiza projekta "Baš čelik"
 
-Ovar repoziorijum predstavlja analizu projekta otvorenog koda u okviru kursa Verifikacija softvera na master studijama na Matematičkom fakultetu Univerziteta u Beogradu.
+Ovaj repozitorijum predstavlja analizu projekta otvorenog koda u okviru kursa Verifikacija softvera na master studijama na Matematičkom fakultetu Univerziteta u Beogradu.
 
 ## Projekat "Baš čelik"
 
@@ -17,6 +17,7 @@ Komit projekta na kom se radi analiza:
 
 - **Ime i prezime:** Marko Lazarević
 - **Broj indeksa:** 1005/2025
+- **Github:** [marko-lazarevic](https://github.com/marko-lazarevic)
 - **Kontakt:** markolazarevic37@gmail.com
 
 ## Alati korišćeni za analizu
