@@ -1,0 +1,15 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/71 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 71/71 completed, now fuzzing with 8 workers
+fuzz: elapsed: 3s, execs: 419 (140/sec), new interesting: 3 (total: 74)
+fuzz: elapsed: 6s, execs: 2334 (638/sec), new interesting: 10 (total: 81)
+fuzz: elapsed: 9s, execs: 3639 (435/sec), new interesting: 15 (total: 86)
+fuzz: elapsed: 12s, execs: 6267 (876/sec), new interesting: 25 (total: 96)
+fuzz: elapsed: 15s, execs: 8657 (797/sec), new interesting: 35 (total: 106)
+fuzz: elapsed: 18s, execs: 10159 (501/sec), new interesting: 39 (total: 110)
+fuzz: elapsed: 21s, execs: 11529 (457/sec), new interesting: 48 (total: 119)
+fuzz: elapsed: 24s, execs: 13147 (539/sec), new interesting: 55 (total: 126)
+fuzz: elapsed: 27s, execs: 14984 (612/sec), new interesting: 59 (total: 130)
+fuzz: elapsed: 30s, execs: 16319 (446/sec), new interesting: 65 (total: 136)
+fuzz: elapsed: 31s, execs: 16319 (0/sec), new interesting: 65 (total: 136)
+PASS
+ok  	github.com/ubavic/bas-celik/v2/document	31.170s

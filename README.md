@@ -27,5 +27,6 @@ Komit projekta na kom se radi analiza:
 | GoVulncheck     | Statička verifikacija  | `./govulncheck/run_govulncheck.sh` | [govulncheck](./govulncheck/README.md)     |
 | Golangci lint   | Statička verifikacija  | `./golangci-lint/run_golangci.sh`  | [golangci-lint](./golangci-lint/README.md) |
 | Go test + cover | Dinamička verifikacija | `./gotest/run_gotest_cover.sh`     | [gotest_cover](./gotest/README.md)         |
+| Go fuzzing      | Dinamička verifikacija | `./gofuzz/run_gotest_fuzz.sh`      | [gotest_fuzz](./gofuzz/README.md)          |
 
 ## Zaključci
