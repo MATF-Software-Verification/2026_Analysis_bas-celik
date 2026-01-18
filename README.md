@@ -24,7 +24,7 @@ Komit projekta na kom se radi analiza:
 | Naziv           | Vrsta                  | Reprodukcija rezultata             | Detaljan opis                              |
 | --------------- | ---------------------- | ---------------------------------- | ------------------------------------------ |
 | Go Fmt          | Stilizovanje koda      | `./gofmt/run_gofmt.sh`             | [gofmt](./gofmt/README.md)                 |
-| GoVulncheck     | Statička verifikacija  | `./govulncheck/run_govulncheck.sh` | [govulncheck](./govulncheck/README.MD)     |
+| GoVulncheck     | Statička verifikacija  | `./govulncheck/run_govulncheck.sh` | [govulncheck](./govulncheck/README.md)     |
 | Golangci lint   | Statička verifikacija  | `./golangci-lint/run_golangci.sh`  | [golangci-lint](./golangci-lint/README.md) |
 | Go test + cover | Dinamička verifikacija | `./gotest/run_gotest_cover.sh`     | [gotest_cover](./gotest/README.md)         |
 
