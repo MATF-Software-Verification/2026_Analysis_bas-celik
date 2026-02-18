@@ -53,6 +53,15 @@ go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 | Go fuzzing      | Dinamička verifikacija | `./gofuzz/run_gotest_fuzz.sh`      | [gotest_fuzz](./gofuzz/README.md)          |
 | Gocyclo         | Statička verifikacija  | `./gocyclo/run_gocyclo.sh`         | [gocyclo](./gocyclo/README.md)             |
 
+Za sve alate dostupni su patch fajlovi u folderu `./patch`. Patch fajlove je potrebno primeniti u narednom redosledu:
+
+1. `govulncheck.patch`
+2. `golangci_lint.patch`
+3. `gotest.patch`
+4. `gocyclo.patch`
+
+> Napomena: U patch fajlovima su samo izmene urađene kao popravke nakon primene alata; izmene korišćene za pokretanje samih alata (unit i fuzz testovi) nalaze se u odgovarajućim direktorijumima ovog repozitorijuma.
+
 ## Zaključci
 
 ### Gofmt
